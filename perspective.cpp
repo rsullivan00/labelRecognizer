@@ -62,6 +62,14 @@ void sortCorners(std::vector<cv::Point2f>& corners, cv::Point2f center)
     corners.push_back(bl);
 }
 
+void drawLines(cv::Mat image, std::vector<cv::Vec4i> lines) {
+    // Draw lines
+    for (int i = 0; i < lines.size(); i++) {
+        cv::Vec4i v = lines[i];
+        cv::line(image, cv::Point(v[0], v[1]), cv::Point(v[2], v[3]), CV_RGB(0,255,0));
+    }
+}
+
 int main(int argc, char** argv) {
     if(argc != 2) {
          std::cout <<" Usage: display_bw ImageToLoadAndDisplay" << std::endl;
@@ -79,20 +87,21 @@ int main(int argc, char** argv) {
     }
 
     edgeMap(bw, bw);
-    std::vector<cv::Vec4i> lines = detectLines(bw);
-    std::cout << lines.size() << " lines" << std::endl;
 
     cv::Mat lineImage = image.clone();
     cv::Mat contourImage = bw.clone();
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(contourImage, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    cv::Mat contourLineImage = image.clone();
 
-    // Draw lines
-    for (int i = 0; i < lines.size(); i++) {
-        cv::Vec4i v = lines[i];
-        cv::line(lineImage, cv::Point(v[0], v[1]), cv::Point(v[2], v[3]), CV_RGB(0,255,0));
-    }
+    std::vector<cv::Vec4i> lines = detectLines(bw);
+    std::cout << lines.size() << " lines" << std::endl;
 
+    drawLines(lineImage, lines);
+    lines = detectLines(contourImage);
+    drawLines(contourLineImage, lines);
+    
+/*
     std::vector<cv::Point2f> corners;
     for (int i = 0; i < lines.size(); i++)
     {
@@ -104,7 +113,9 @@ int main(int argc, char** argv) {
             }
         }
     }
+*/
 
+/*
     std::vector<cv::Point2f> approx;
     cv::approxPolyDP(cv::Mat(corners), approx, 
                      cv::arcLength(cv::Mat(corners), true) * 0.02, true);
@@ -122,11 +133,12 @@ int main(int argc, char** argv) {
 
     center *= (1. / corners.size());
     sortCorners(corners, center);
-
+*/
 //    cv::imshow("Original", image);
     cv::imshow("Edge detected bw", bw);
     cv::imshow("Lines found", lineImage);
     cv::imshow("Contours found", contourImage);
+    cv::imshow("Lines found from contours", contourLineImage);
 
     cv::waitKey(0);                   
     return 0;
