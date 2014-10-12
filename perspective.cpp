@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
     cv::imwrite("edge.jpg", bw);
     cv::imwrite("lines.jpg", lineImage);
     cv::imwrite("contours.jpg", contourImage);
+    cv::imwrite("contourLines.jpg", contourLineImage);
 
     cv::waitKey(0);                   
     return 0;
