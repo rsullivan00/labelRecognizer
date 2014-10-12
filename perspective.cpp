@@ -128,6 +128,10 @@ int main(int argc, char** argv) {
     cv::imshow("Lines found", lineImage);
     cv::imshow("Contours found", contourImage);
 
+    cv::imwrite("edge.jpg", bw);
+    cv::imwrite("lines.jpg", lineImage);
+    cv::imwrite("contours.jpg", contourImage);
+
     cv::waitKey(0);                   
     return 0;
 }
