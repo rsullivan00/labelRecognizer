@@ -1,5 +1,5 @@
 CC=gcc
-CXX=g++
+CXX=g++ -std=c++11
 RM=rm 
 LDLIBS= -L `pkg-config --cflags --libs opencv`
 

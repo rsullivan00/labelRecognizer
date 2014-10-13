@@ -5,8 +5,12 @@
 
 void edgeMap(cv::Mat bw, cv::Mat edgeImage) {
     /* Get the edge map using the canny operator */
-    cv::Canny(bw, bw, 100, 100, 3, true);
-    //cv::Canny(bw, bw, 50, 200, 3);
+    cv::Canny(bw, edgeImage, 100, 100, 3, true);
+}
+
+void blur(cv::Mat inputImage, cv::Mat outputImage) {
+    cv::Size size(3, 3);
+    cv::GaussianBlur(inputImage, outputImage, size, 3);
 }
 
 std::vector<cv::Vec4i>detectLines(cv::Mat bw) {
@@ -86,45 +90,57 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    edgeMap(bw, bw);
 
-    cv::Mat lineImage = image.clone();
+    std::vector<cv::Vec4i> lines;
+
     cv::Mat contourImage = bw.clone();
+    edgeMap(bw, bw);
     std::vector<std::vector<cv::Point> > contours;
+
+    blur(contourImage, contourImage);
+
+    cv::adaptiveThreshold(contourImage, contourImage, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 11, 2);
+
+    edgeMap(contourImage, contourImage);
     cv::findContours(contourImage, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-    cv::Mat contourLineImage = image.clone();
+    std::cout << contours.size() << " contours" << std::endl;
 
-    std::vector<cv::Vec4i> lines = detectLines(bw);
-    std::cout << lines.size() << " lines" << std::endl;
-
-    drawLines(lineImage, lines);
-    lines = detectLines(contourImage);
-    drawLines(contourLineImage, lines);
-    
-/*
-    std::vector<cv::Point2f> corners;
-    for (int i = 0; i < lines.size(); i++)
-    {
-        for (int j = i+1; j < lines.size(); j++)
-        {
-            cv::Point2f pt = computeIntersect(lines[i], lines[j]);
-            if (pt.x >= 0 && pt.y >= 0) {
-                corners.push_back(pt);
-            }
+    double maxArea = 0;
+    std::vector<cv::Point> biggestContour;
+    std::vector<cv::Point> approx;
+    for (auto &contour: contours) {
+        double area = contourArea(contour);
+        double peri = cv::arcLength(contour, true);
+        cv::approxPolyDP(contour, approx, 0.02*peri, true);
+        if (area > maxArea && approx.size() == 4) { 
+            maxArea = area; 
+            biggestContour = approx; 
         }
     }
-*/
 
-/*
-    std::vector<cv::Point2f> approx;
-    cv::approxPolyDP(cv::Mat(corners), approx, 
-                     cv::arcLength(cv::Mat(corners), true) * 0.02, true);
+    contourImage = image.clone();
+    contours.clear();
+    contours.push_back(biggestContour);
+    cv::drawContours(contourImage, contours, -1, CV_RGB(0,255,0));
 
-    if (approx.size() != 4)
+    cv::Mat contourLineImage = image.clone();
+    //lines = detectLines(contourImage);
+    drawLines(contourLineImage, lines);
+ 
+    lines = detectLines(bw);
+    std::cout << lines.size() << " lines" << std::endl;
+    
+    cv::Mat lineImage = image.clone();
+    drawLines(lineImage, lines);
+   
+    if (biggestContour.size() != 4)
     {
         std::cout << "The object is not quadrilateral!" << std::endl;
-        //return -1;
+        return -1;
     }
+
+    std::vector<cv::Point2f> corners;
+    cv::Mat(biggestContour).convertTo(corners, cv::Mat(corners).type());
 
     // Get mass center
     cv::Point2f center(0,0);
@@ -133,7 +149,25 @@ int main(int argc, char** argv) {
 
     center *= (1. / corners.size());
     sortCorners(corners, center);
-*/
+
+    // Define the destination image
+    cv::Rect boundingRect = cv::boundingRect(biggestContour);
+    cv::Mat quad = cv::Mat::zeros(boundingRect.size(), CV_8UC3);
+
+    // Corners of the destination image
+    std::vector<cv::Point2f> quad_pts;
+    quad_pts.push_back(cv::Point2f(0, 0));
+    quad_pts.push_back(cv::Point2f(quad.cols, 0));
+    quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
+    quad_pts.push_back(cv::Point2f(0, quad.rows));
+
+    // Get transformation matrix
+    cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
+
+    // Apply perspective transformation
+    cv::warpPerspective(image, quad, transmtx, quad.size());
+    cv::imshow("quadrilateral", quad);
+
 //    cv::imshow("Original", image);
     cv::imshow("Edge detected bw", bw);
     cv::imshow("Lines found", lineImage);
