@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     edgeMap(bw, bw);
     std::vector<std::vector<cv::Point> > contours;
 
-    blur(contourImage, contourImage);
+//    blur(contourImage, contourImage);
 
     cv::adaptiveThreshold(contourImage, contourImage, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 11, 2);
 
