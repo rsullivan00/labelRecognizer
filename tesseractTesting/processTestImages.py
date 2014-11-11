@@ -2,8 +2,11 @@ import os
 import glob
 import Image
 import pytesseract
-import cv2
 import re
+import sys
+
+sys.path.append('/usr/local/lib/python2.7/site-packages')
+import cv2
 
 def writeFile(directory, fileName, content):
     outFile = open('outputs/' + directory + '/' + fileName + '.txt', 'w')
