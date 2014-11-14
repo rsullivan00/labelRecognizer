@@ -42,6 +42,10 @@ int levenshteinDistance(const std::string &s1, const std::string &s2) {
     return d[m][n];
 }
 
+/*
+ * Test program for levenshtein distance.
+ */
+/*
 int main(int argc, char **argv) {
     if (argc != 3)
         std::cout << "Two arguments required." << std::endl;
@@ -55,3 +59,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+*/
+
