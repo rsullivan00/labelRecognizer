@@ -17,8 +17,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "split.cpp"
-#include "postProcess.cpp"
+#include "../helpers/split.h"
+#include "../postProcessing/postProcess.cpp"
 
 using namespace std;
 using namespace cv;
