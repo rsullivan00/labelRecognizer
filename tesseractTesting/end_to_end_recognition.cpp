@@ -18,6 +18,7 @@
 #include <fstream>
 
 #include "split.cpp"
+#include "postProcess.cpp"
 
 using namespace std;
 using namespace cv;
@@ -117,6 +118,7 @@ int main(int argc, char* argv[])
     float scale_img  = 600.f/image.rows;
     float scale_font = (float)(2-scale_img)/1.4f;
     vector<string> words_detection;
+    vector<string> outputLines;
 
     t_r = (double)getTickCount();
 
@@ -141,22 +143,8 @@ int main(int argc, char* argv[])
         ocr->run(group_img, output, &boxes, &words, &confidences, OCR_LEVEL_WORD);
 
         output.erase(remove(output.begin(), output.end(), '\n'), output.end());
-        outFile << output << endl;
         cout << "OCR output = \"" << output << "\" length = " << output.size() << endl;
-        vector<string> wordList = split(output, ' ');
-        string key = wordList[0];
-        if (wordList.size() > 1 && !isdigit(wordList[1][0]))
-            key += " " + wordList[1];
-        string lastWord = wordList.back();
-        if (lastWord.back() == 'g') {
-            lastWord.pop_back();
-            if (lastWord.back() == 'm')
-                lastWord.pop_back();
-        } else if (lastWord.back() == '9') {
-            lastWord.pop_back();
-        }
-
-        cout << key << '\t' << lastWord << endl;
+        outputLines.push_back(output);
 
         if (output.size() < 3)
             continue;
@@ -181,6 +169,8 @@ int main(int argc, char* argv[])
         }
 
     }
+
+    postProcess(outputLines);
 
     cout << "TIME_OCR = " << ((double)getTickCount() - t_r)*1000/getTickFrequency() << endl;
 
