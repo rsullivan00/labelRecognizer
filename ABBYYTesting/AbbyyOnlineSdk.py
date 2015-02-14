@@ -35,8 +35,8 @@ class AbbyyOnlineSdk:
         # register at http://cloud.ocrsdk.com/Account/Register
         # More info on getting your application id and password at
         # http://ocrsdk.com/documentation/faq/#faq3
-        ApplicationId = "user"
-        Password = "password"
+        ApplicationId = "labelRecognizer"
+        Password = "Y2EUc23V08LlK4/KaZSTTtvf"
         Proxy = None
         enableDebugging = 0
 
