@@ -4,6 +4,7 @@ import os
 import json
 from label import Label
 
+os.chdir('../')
 def processCSV(filename="label_data.csv", outputdir="db"):
     with open(filename) as csvfile:
         if not csvfile:
