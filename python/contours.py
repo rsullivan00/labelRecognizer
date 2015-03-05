@@ -1,4 +1,3 @@
-import numpy as np
 import cv2
 import sys
 import os
@@ -12,7 +11,9 @@ def contour(imagepath, show=True):
 	im_size = im_x * im_y
 	imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
 	ret,thresh = cv2.threshold(imgray,127,255,0)
+#	thresh = cv2.adaptiveThreshold(imgray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,21,0)
 	image, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+
 
 	# Filter based on contour size
 	large_contours = []
@@ -62,7 +63,7 @@ def contour(imagepath, show=True):
 	# Draw remaining contours on original image
 	if show:
 		for i in range(len(label_contours)):
-			cv2.drawContours(im, label_contours, i, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -1)
+			cv2.drawContours(im, label_contours, i, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
 		cv2.namedWindow('contour', cv2.WINDOW_NORMAL)
 		cv2.imshow('contour', im)
 		cv2.waitKey()
