@@ -1,3 +1,5 @@
+import jsonpickle
+
 class Label:
     """Label class contains all nutritional information corresponding to a food label."""
     def __init__(self, attr_list=None):
@@ -21,3 +23,6 @@ class Label:
                 attr_list[i] = None
 
             setattr(self, attr, attr_list[i])
+
+    def __str__(self):
+        return str(self.__dict__)

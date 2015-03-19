@@ -1,7 +1,7 @@
 import sys
 import csv
 import os
-import json
+import jsonpickle
 from label import Label
 
 os.chdir('../')
@@ -21,7 +21,8 @@ def processCSV(filename="label_data.csv", outputdir="db"):
         for row in reader:
             label = Label(row)
             outfile = open(os.path.join(outputdir, label.name+'.json'), 'w')
-            json.dump(label.__dict__, outfile, indent=1)
+            json = jsonpickle.encode(label)
+            outfile.write(json)
             outfile.close()
             print(label.name)
 
