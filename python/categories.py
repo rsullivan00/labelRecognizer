@@ -20,7 +20,7 @@ def complete_labels(json_dir="../db"):
         except:
             continue
 
-        if any([label.__dict__[r] is None for r in required]):
+        if all([label.__dict__[r] is not None for r in required]):
             complete_labels.append(label)
 
     return complete_labels 
@@ -37,6 +37,4 @@ def easy_labels(json_dir="../db"):
             easy_labels.append(label)
 
     return easy_labels
-
-print(easy_labels())
 
