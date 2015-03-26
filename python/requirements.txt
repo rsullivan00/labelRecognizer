@@ -1,2 +1,4 @@
+attrdict==1.2.0
 jsonpickle==0.9.1
 numpy==1.9.1
+python-Levenshtein==0.11.2
