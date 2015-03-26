@@ -3,6 +3,7 @@ import csv
 import os
 import jsonpickle
 from label import Label
+from keywords import Keywords
 
 types = ['blurry', 'wrinkled', 'shadowed', 'skewed', 'curved']
 required = ['calories', 'carbohydrates', 'protein', 'total_fat']

@@ -48,9 +48,6 @@ def contour_filter_centroid(contours, distance_thresh, centroid):
     """
     filtered_contours = []
     cx_im, cy_im = centroid
-    print(centroid)
-    print(cx_im)
-    print(cy_im)
     for cnt in contours:
         # Moments of the contour
         M = cv2.moments(cnt)
@@ -69,6 +66,9 @@ def contour_filter_centroid(contours, distance_thresh, centroid):
     return filtered_contours
 
 def contour_filter_center(contours, centroid):
+    """
+    Eliminate all contours that do not contain the center of the image.
+    """
     filtered_contours = []
     # Find contour in the middle of the image
     for cnt in contours:
@@ -79,7 +79,12 @@ def contour_filter_center(contours, centroid):
     print('%d/%d center contours found' % (len(filtered_contours), len(contours)))
     return filtered_contours
 
-def contour(imagepath, show=True):
+def draw_image(image, name):
+        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(name, 800, 800)
+        cv2.imshow(name, image)
+
+def contour(imagepath, show=False, show_fail=False):
     if not os.path.exists(imagepath):
         print("Could not find %s" % imagepath)
         return False
@@ -95,23 +100,38 @@ def contour(imagepath, show=True):
     image, contours, hierarchy = cv2.findContours(thresh.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
 
     # Filter based on contour size
-    large_contours = contour_filter_size(contours, im_size/8)
+    large_contours = contour_filter_size(contours, im_size/10)
 
     # Now filter based on the location of the contour's centroid
     centroid = (im_x/2, im_y/2)
-# Is this actually useful?
-#    possible_label_contours = contour_filter_centroid(large_contours, im_size/2000, centroid)
+    # Is this actually useful?
+    #    possible_label_contours = contour_filter_centroid(large_contours, im_size/2000, centroid)
 
+    # This should only return a single contour...and will supercede any other filtering. Should we only use this type of filtering?
     label_contours = contour_filter_center(large_contours, centroid)
 
     if len(label_contours) == 0:
         return False
 
     contour = label_contours[0]
-    contour_corners = cv2.approxPolyDP(contour, 50, True)
-    # TODO: Account for contours that are not rectagular. Possibly use an iterative method to try to obtain rectangles.
+    epsilon = 50
+    contour_corners = cv2.approxPolyDP(contour, epsilon, True)
+    # Iteratively apply approximations to try to achieve a rectangle.
+    for i in range(4):
+        if len(contour_corners) == 4:
+            break
+        epsilon *= 2 
+        contour_corners = cv2.approxPolyDP(contour, epsilon, True)
+
+    # If we did not find a rectangle, fail.
     if len(contour_corners) != 4:
         print("Contour not rectangular, but of size %s" % len(contour_corners))
+        if show_fail:
+            cv2.drawContours(thresh, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+            cv2.drawContours(im, [contour_corners], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+            draw_image(im, 'Failed: approx')
+            draw_image(thresh, 'Failed: contour')
+            cv2.waitKey()
         return False
 
     # Arrange corners in clockwise order
@@ -139,14 +159,8 @@ def contour(imagepath, show=True):
     #cv2.polylines(label_im, [contour_corners], True, (random.randint(0,255),random.randint(0,255),random.randint(0,255)))
 
     if show:
-        def draw_image(image, name):
-                cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-                cv2.resizeWindow(name, 800, 800)
-                cv2.imshow(name, image)
-
         draw_image(im, 'contour')
         draw_image(label_im, 'label')
-        cv2.waitKey()
 
     return label_im
 
