@@ -6,6 +6,10 @@ from label import Label
 
 os.chdir('../')
 def process_csv(filename="label_data.csv", outputdir="db"):
+    """
+    Generates a directory of json files corresponding to the provided
+    csv file.
+    """
     with open(filename) as csvfile:
         if not csvfile:
             print("File '%s' not found. " % filename)

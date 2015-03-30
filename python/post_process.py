@@ -11,6 +11,9 @@ def contains_digits(s):
     return bool(_digits.search(s))
 
 def make_pairs(raw_text):
+    """
+    Consume raw OCR text, turning each line into a pair of string values.
+    """
     lines = raw_text.split('\n')
     # Remove emtpy lines
     lines = filter(None, lines)
@@ -32,6 +35,11 @@ def make_pairs(raw_text):
     return pairs
 
 def keyword_pairs(pairs):
+    """
+    Take a list of pairs and return a list of pairs,
+    with first values having the appropriate keyword.
+    (keyword, stuff)
+    """
     if len(pairs) < len(keywords):
         return False
 
@@ -49,6 +57,10 @@ def keyword_pairs(pairs):
     return keyword_pairs
 
 def split_percentages(key_pairs):
+    """
+    Attempt to intelligently split pairs into 3-tuples.
+    (keyword, stuff) -> (keyword, value, percent)
+    """
     def calories_tuple(pair):
         return (pair[0], pair[1].split(' ')[0], None)
 
@@ -72,6 +84,10 @@ def split_percentages(key_pairs):
     return tuples
 
 def post_process(raw_text):
+    """
+    Consume OCR text, producing a Label object with
+    the appropriate information.
+    """
     all_pairs = make_pairs(raw_text)
     if not all_pairs:
         return False

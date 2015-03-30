@@ -80,11 +80,21 @@ def contour_filter_center(contours, centroid):
     return filtered_contours
 
 def draw_image(image, name):
-        cv2.namedWindow(name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(name, 800, 800)
-        cv2.imshow(name, image)
+    """
+    Draws the Mat image on a frame with name 'name.'
+    """
+    cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(name, 800, 800)
+    cv2.imshow(name, image)
 
 def contour(imagepath, show=False, show_fail=False):
+    """
+    Finds a label contour in the specified image.
+    The show flags control whether we display the results visually
+    (this waits for a manual key press).
+    Returns an image with just the extracted label, or False if
+    no label is found.
+    """
     if not os.path.exists(imagepath):
         print("Could not find %s" % imagepath)
         return False

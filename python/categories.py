@@ -5,10 +5,14 @@ import jsonpickle
 from label import Label
 from keywords import Keywords
 
-types = ['blurry', 'wrinkled', 'shadowed', 'skewed', 'curved']
+special_types = ['blurry', 'wrinkled', 'shadowed', 'skewed', 'curved']
 required = ['calories', 'carbohydrates', 'protein', 'total_fat']
 
 def complete_labels(json_dir="../db"):
+    """ 
+    Returns a list of every Label object that has 
+    each of the 'required' attributes populated.
+    """
     if not os.path.isdir(json_dir):
         print("Directory '%s' not found. " % json_dir)
         sys.exit(1)
@@ -27,6 +31,10 @@ def complete_labels(json_dir="../db"):
     return complete_labels 
 
 def easy_labels(json_dir="../db"):
+    """
+    Returns a list of Label objects that are not marked by any of the 'special_types'
+    specified. Each Label object has all required attributes populated.
+    """
     if not os.path.isdir(json_dir):
         print("Directory '%s' not found. " % json_dir)
         sys.exit(1)
@@ -34,7 +42,7 @@ def easy_labels(json_dir="../db"):
     labels = complete_labels(json_dir)
     easy_labels = []
     for label in labels:
-        if all([not label.__dict__[t] for t in types]):
+        if all([not label.__dict__[t] for t in special_types]):
             easy_labels.append(label)
 
     return easy_labels

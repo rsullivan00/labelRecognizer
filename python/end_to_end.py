@@ -9,6 +9,9 @@ import os
 import jsonpickle
 
 def test_all_easy(dirpath):
+    """
+    Runs a complete label test on every .jpg in the specified directory.
+    """
     labels = easy_labels()
     ocr_results = []
     for label in labels:
@@ -25,6 +28,12 @@ def test_all_easy(dirpath):
     print('%d/%d keywords correct for completed labels' % (total_correct, total))
 
 def test_label(impath, label, jsonpath=None):
+    """
+    Test for a label found in the given image, and compare with the 
+    second 'label' argument.
+    If the jsonpath argument is provided, information
+    from that file is used instead of the other specified arguments.
+    """
     if jsonpath is not None:
         label = jsonpickle.decode(jsonpath)
     print('Label %s' % label.name)
@@ -41,6 +50,9 @@ def test_label(impath, label, jsonpath=None):
     return (correct, len(Keywords.json))
 
 def end_to_end(impath):
+    """
+    Return a Label object from a label in the provided image.
+    """
     label_im = contour(impath, show=False, show_fail=False)
     if label_im is False:
         return False
