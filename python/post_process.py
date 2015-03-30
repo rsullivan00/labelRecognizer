@@ -89,10 +89,10 @@ def post_process(raw_text):
     the appropriate information.
     """
     all_pairs = make_pairs(raw_text)
-    if not all_pairs:
+    if all_pairs == False:
         return False
     key_pairs = keyword_pairs(all_pairs)
-    if not keyword_pairs: 
+    if key_pairs == False: 
         return False
     key_tuples = split_percentages(key_pairs)
     key_map = dict((a, (b,c)) for a, b, c, in key_tuples)
