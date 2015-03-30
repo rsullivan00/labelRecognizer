@@ -171,6 +171,7 @@ def contour(imagepath, show=False, show_fail=False):
     if show:
         draw_image(im, 'contour')
         draw_image(label_im, 'label')
+        cv2.waitKey()
 
     return label_im
 

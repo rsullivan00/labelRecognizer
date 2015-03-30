@@ -53,7 +53,7 @@ def end_to_end(impath):
     """
     Return a Label object from a label in the provided image.
     """
-    label_im = contour(impath, show=False, show_fail=False)
+    label_im = contour(impath, show=True, show_fail=True)
     if label_im is False:
         return False
 
