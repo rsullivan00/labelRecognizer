@@ -6,6 +6,8 @@ import random
 import numpy as np
 from categories import easy_labels
 
+fileNumber = 0;
+
 def corners(cnt):
     """
     Reorders 4 corners into clockwise order.
@@ -95,6 +97,13 @@ def contour(imagepath, show=False, show_fail=False):
     Returns an image with just the extracted label, or False if
     no label is found.
     """
+    global fileNumber
+
+    fileNameGray = "GRAY/gray" + str(fileNumber) + ".jpg"
+    fileNameBlur = "BLUR/blur" + str(fileNumber) + ".jpg"
+    fileNameThresh = "THRESHOLD/thresh" + str(fileNumber) + ".jpg"
+    fileNameContour = "CONTOUR/contour" + str(fileNumber) + ".jpg"
+
     if not os.path.exists(imagepath):
         print("Could not find %s" % imagepath)
         return False
@@ -104,10 +113,15 @@ def contour(imagepath, show=False, show_fail=False):
     im_y = len(im[0])
     im_size = im_x * im_y
     imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    cv2.imwrite(fileNameGray, imgray)
     imgray = cv2.medianBlur(imgray,3)
+    cv2.imwrite(fileNameBlur, imgray)
     ret,thresh = cv2.threshold(imgray,125,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    cv2.imwrite(fileNameThresh, thresh)
 #    thresh = cv2.adaptiveThreshold(imgray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     image, contours, hierarchy = cv2.findContours(thresh.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+
+    fileNumber += 1
 
     # Filter based on contour size
     large_contours = contour_filter_size(contours, im_size/10)
@@ -136,12 +150,12 @@ def contour(imagepath, show=False, show_fail=False):
     # If we did not find a rectangle, fail.
     if len(contour_corners) != 4:
         print("Contour not rectangular, but of size %s" % len(contour_corners))
-        if show_fail:
-            cv2.drawContours(thresh, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
-            cv2.drawContours(im, [contour_corners], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
-            draw_image(im, 'Failed: approx')
-            draw_image(thresh, 'Failed: contour')
-            cv2.waitKey()
+        #if show_fail:
+            #cv2.drawContours(thresh, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+            #cv2.drawContours(im, [contour_corners], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+            #draw_image(im, 'Failed: approx')
+            #draw_image(thresh, 'Failed: contour')
+            #cv2.waitKey()
         return False
 
     # Arrange corners in clockwise order
@@ -164,14 +178,15 @@ def contour(imagepath, show=False, show_fail=False):
 
     # Draw contour on original image
     cv2.drawContours(im, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+    cv2.imwrite(fileNameContour, im)
     #contour_corners.reshape((-1,1,2))
     #print(contour_corners)
     #cv2.polylines(label_im, [contour_corners], True, (random.randint(0,255),random.randint(0,255),random.randint(0,255)))
 
-    if show:
-        draw_image(im, 'contour')
-        draw_image(label_im, 'label')
-        cv2.waitKey()
+    #if show:
+        #draw_image(im, 'contour')
+        #draw_image(label_im, 'label')
+        #cv2.waitKey()
 
     return label_im
 
