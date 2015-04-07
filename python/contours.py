@@ -99,25 +99,37 @@ def contour(imagepath, show=False, show_fail=False):
     """
     global fileNumber
 
+    fileNameOriginal = "ORIGINAL/original" + str(fileNumber) + ".jpg"
     fileNameGray = "GRAY/gray" + str(fileNumber) + ".jpg"
+    fileNameHist = "HIST/hist" + str(fileNumber) + ".jpg"
     fileNameBlur = "BLUR/blur" + str(fileNumber) + ".jpg"
-    fileNameThresh = "THRESHOLD/thresh" + str(fileNumber) + ".jpg"
-    fileNameContour = "CONTOUR/contour" + str(fileNumber) + ".jpg"
+    fileNameGThresh = "THRESHOLDG/thresh" + str(fileNumber) + ".jpg"
+    fileNameMThresh = "THRESHOLDM/thresh" + str(fileNumber) + ".jpg"
+    fileNameContour = "CONTOUR/contour" + str(fileNumber)
 
     if not os.path.exists(imagepath):
         print("Could not find %s" % imagepath)
         return False
 
     im = cv2.imread(imagepath)
-    im_x = len(im)
-    im_y = len(im[0])
+    cv2.imwrite(fileNameOriginal, im)
+    im_x = len(im[0])
+    im_y = len(im)
     im_size = im_x * im_y
     imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
     cv2.imwrite(fileNameGray, imgray)
     imgray = cv2.medianBlur(imgray,3)
     cv2.imwrite(fileNameBlur, imgray)
-    ret,thresh = cv2.threshold(imgray,125,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    cv2.imwrite(fileNameThresh, thresh)
+    cv2.equalizeHist(imgray, imgray)
+    cv2.imwrite(fileNameHist, imgray)
+    #ret, thresh = cv2.threshold(imgray, 127, 255, cv2.THRESH_BINARY)
+    #ret,thresh = cv2.threshold(imgray,125,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    imgray = cv2.bilateralFilter(imgray, 5, 50, 50)
+    cv2.imwrite(fileNameMThresh, imgray)
+    thresh = cv2.adaptiveThreshold(imgray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 101, 5)
+    cv2.imwrite(fileNameGThresh, thresh)
+    #thresh = cv2.adaptiveThreshold(thresh, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    #cv2.imwrite(fileNameMThresh, thresh)
 #    thresh = cv2.adaptiveThreshold(imgray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     image, contours, hierarchy = cv2.findContours(thresh.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -127,7 +139,7 @@ def contour(imagepath, show=False, show_fail=False):
     large_contours = contour_filter_size(contours, im_size/10)
 
     # Now filter based on the location of the contour's centroid
-    centroid = (im_x/2, im_y/2)
+    centroid = (int(im_x/2), int(im_y/2))
     # Is this actually useful?
     #    possible_label_contours = contour_filter_centroid(large_contours, im_size/2000, centroid)
 
@@ -137,6 +149,14 @@ def contour(imagepath, show=False, show_fail=False):
     if len(label_contours) == 0:
         return False
 
+    x = 0
+    for j in large_contours:
+        name = fileNameContour + "-" + str(x) + ".jpg"
+        cv2.drawContours(im, [j], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+        cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
+        cv2.imwrite(name, im)
+        im = cv2.imread(imagepath)
+        x += 1
     contour = label_contours[0]
     epsilon = 50
     contour_corners = cv2.approxPolyDP(contour, epsilon, True)
@@ -147,16 +167,16 @@ def contour(imagepath, show=False, show_fail=False):
         epsilon *= 2 
         contour_corners = cv2.approxPolyDP(contour, epsilon, True)
 
-    # If we did not find a rectangle, fail.
-    if len(contour_corners) != 4:
-        print("Contour not rectangular, but of size %s" % len(contour_corners))
-        #if show_fail:
-            #cv2.drawContours(thresh, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
-            #cv2.drawContours(im, [contour_corners], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
-            #draw_image(im, 'Failed: approx')
-            #draw_image(thresh, 'Failed: contour')
-            #cv2.waitKey()
-        return False
+        # If we did not find a rectangle, fail.
+        if len(contour_corners) != 4:
+            print("Contour not rectangular, but of size %s" % len(contour_corners))
+            #if show_fail:
+                #cv2.drawContours(thresh, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+            	#cv2.drawContours(im, [contour_corners], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+            	#draw_image(im, 'Failed: approx')
+            	#draw_image(thresh, 'Failed: contour')
+            	#cv2.waitKey()
+            return False
 
     # Arrange corners in clockwise order
     contour_corners = corners(contour_corners)
@@ -178,7 +198,7 @@ def contour(imagepath, show=False, show_fail=False):
 
     # Draw contour on original image
     cv2.drawContours(im, [contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
-    cv2.imwrite(fileNameContour, im)
+    cv2.imwrite((fileNameContour + ".jpg"), im)
     #contour_corners.reshape((-1,1,2))
     #print(contour_corners)
     #cv2.polylines(label_im, [contour_corners], True, (random.randint(0,255),random.randint(0,255),random.randint(0,255)))
