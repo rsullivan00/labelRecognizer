@@ -3,4 +3,14 @@
 labels
 *.pyc
 __pycache__
+python/__pycache__
 venv
+python/BLUR
+python/HIST
+python/CONTOUR
+python/THRESHOLD
+python/THRESHOLDM
+python/THRESHOLDG
+python/GRAY
+python/ORIGINAL
+python/temp.txt

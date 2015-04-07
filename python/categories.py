@@ -5,7 +5,7 @@ import jsonpickle
 from label import Label
 from keywords import Keywords
 
-special_types = ['blurry', 'wrinkled', 'shadowed', 'skewed', 'curved']
+special_types = ['blurry', 'wrinkled', 'shadowed', 'skewed', 'curved', 'not_bw']
 required = ['calories', 'carbohydrates', 'protein', 'total_fat']
 
 def complete_labels(json_dir="../db"):

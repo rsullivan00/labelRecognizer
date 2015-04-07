@@ -1,0 +1,21 @@
+Without iteratively looking for rectangles:
+14/30 labels processed to completion
+40/56 keywords correct for completed labels
+
+With iterative rectangle coercion:
+21/30 labels processed to completion
+48/84 keywords correct for completed labels
+
+No iteration, with image inversion on failure:
+16/30 labels processed to completion
+50/64 keywords correct for completed labels
+78%
+
+39/52
+75%
+
+Adaptive thresholding, w/ 3x3 Gaussian Blur
+    thresh = cv2.adaptiveThreshold(imgray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,21,5)
+13/30 labels processed to completion
+39/52 keywords correct for completed labels
+

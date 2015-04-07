@@ -1,0 +1,5 @@
+Problem cases:
+1) Inverted color schemes
+2) Faded background, trying sharpening (ask Nate)
+3) Try machine learning for categorization (feature extraction)
+    Look at histograms of images, characterize histograms based on common features

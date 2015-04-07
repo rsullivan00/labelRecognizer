@@ -1,5 +1,5 @@
-from contours import contour
-from categories import easy_labels
+from contours import contour, draw_image
+from categories import easy_labels, complete_labels
 from text import apply_tesseract
 from post_process import post_process
 from keywords import *
@@ -37,7 +37,7 @@ def test_label(impath, label, jsonpath=None):
     if jsonpath is not None:
         label = jsonpickle.decode(jsonpath)
     print('Label %s' % label.name)
-    ocr_label = end_to_end(impath)
+    ocr_label = end_to_end(impath, show=True)
     if ocr_label is False:
         return False
 
@@ -49,22 +49,28 @@ def test_label(impath, label, jsonpath=None):
  
     return (correct, len(Keywords.json))
 
-def end_to_end(impath):
+def end_to_end(impath, show=False):
     """
     Return a Label object from a label in the provided image.
     """
-    label_im = contour(impath, show=True, show_fail=True)
+    label_im = contour(impath)
     if label_im is False:
-        return False
+        label_im = contour(impath, invert=True)
+        if label_im is False:
+            return False
 
     label_impath = impath.replace('.jpg', '_label_tmp.jpg')
     cv2.imwrite(label_impath, label_im)
+
     # Apply Tesseract to image
     output = apply_tesseract(label_impath)
     os.remove(label_impath)
     
     ocr_label = post_process(output)
-    
+
+    if show:
+        draw_image(label_im, 'Transformed label: %s' % impath)
+   
     return ocr_label
 
 def main():
