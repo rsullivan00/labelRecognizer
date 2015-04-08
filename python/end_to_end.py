@@ -37,7 +37,7 @@ def test_label(impath, label, jsonpath=None):
     if jsonpath is not None:
         label = jsonpickle.decode(jsonpath)
     print('Label %s' % label.name)
-    ocr_label = end_to_end(impath, show=True)
+    ocr_label = end_to_end(impath, show=False)
     if ocr_label is False:
         return False
 

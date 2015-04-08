@@ -108,8 +108,12 @@ def contour(imagepath, invert=False):
     fileName = os.path.basename(imagepath)
     fileNameGray = "GRAY/gray" + fileName
     fileNameBlur = "BLUR/blur" + fileName
-    fileNameThresh = "THRESHOLD/thresh" + fileName
+    fileNameGThresh = "THRESHOLDG/thresh" + fileName
+    fileNameMThresh = "THRESHOLDM/thresh" + fileName
     fileNameContour = "CONTOUR/contour" + fileName
+    fileNameOriginal = "ORIGINAL/original" + fileName
+    fileNameHist = "HIST/hist" + fileName
+    fileNameFinal = "FINAL/final" + fileName
 
     im = cv2.imread(imagepath)
     cv2.imwrite(fileNameOriginal, im)
@@ -119,6 +123,7 @@ def contour(imagepath, invert=False):
     imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
     if invert:
         imgray = invert_color(imgray)
+    imageToBeCut = imgray
     cv2.imwrite(fileNameGray, imgray)
     imgray = cv2.medianBlur(imgray,3)
     #imgray = cv2.blur(imgray,(3,3))
@@ -192,9 +197,12 @@ def contour(imagepath, invert=False):
 
     new_corners = corners(np.array([[0,0], [size[0],0], [size[0],size[1]], [0,size[1]]], np.float32))
     M = cv2.getPerspectiveTransform(np.array(contour_corners, np.float32), new_corners)
-    label_im = cv2.warpPerspective(thresh, M, dsize=size)
+    label_im = cv2.warpPerspective(imageToBeCut, M, dsize=size)
 
-    return label_im
+    ret,thresh = cv2.threshold(label_im, 125, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    cv2.equalizeHist(thresh, thresh)
+    cv2.imwrite(fileNameFinal, thresh)
+    return thresh
 
 def process_all_easy(dirpath):
     labels = easy_labels()
