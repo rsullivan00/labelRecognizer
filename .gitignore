@@ -9,6 +9,7 @@ python/BLUR
 python/HIST
 python/CONTOUR
 python/THRESHOLD
+python/FINAL
 python/THRESHOLDM
 python/THRESHOLDG
 python/GRAY

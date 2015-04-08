@@ -1,3 +1,9 @@
+Meeting April 7th:
+1)In the case where we have multiple center contours returned, choose more intelligently by Choosing a contour that easily approximates to a rectangle
+2)Save final transformed image or print the approximation rectangle
+3)Current solution does a good job of finding contour, but we should take that area from the ORIGINAL image, and process that for final label extraction.
+
+Ideas April 5th:
 Problem cases:
 1) Inverted color schemes
 2) Faded background, trying sharpening (ask Nate)

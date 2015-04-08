@@ -120,6 +120,7 @@ def contour(imagepath, invert=False):
     im_x = len(im[0])
     im_y = len(im)
     im_size = im_x * im_y
+
     imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
     if invert:
         imgray = invert_color(imgray)
@@ -146,47 +147,50 @@ def contour(imagepath, invert=False):
     centroid = (int(im_x/2), int(im_y/2))
 
     for x,j in enumerate(large_contours):
-        name = fileNameContour + "-" + str(x) + ".jpg"
+        name = fileNameContour.replace('.jpg', '-' + str(x) + '.jpg')
         cv2.drawContours(im, [j], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
         cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
         cv2.imwrite(name, im)
         im = cv2.imread(imagepath)
 
-    # Is this actually useful?
-    #    possible_label_contours = contour_filter_centroid(large_contours, im_size/2000, centroid)
-
-    # This should only return a single contour...and will supercede any other filtering. Should we only use this type of filtering?
+    # Filter to contours containing central point
     label_contours = contour_filter_center(large_contours, centroid)
 
     if len(label_contours) == 0:
         return False
 
-    label_contour = label_contours[0]
+    epsilon = 50
+    label_corners = None
+    label_contour = None
+    # Iteratively apply approximations to try to achieve a rectangle.
+    for i in range(2):
+        for l_c in label_contours:
+            contour_corners = cv2.approxPolyDP(l_c, epsilon, True)
+            if len(contour_corners) == 4:
+                label_corners = contour_corners
+                label_contour = l_c
+                break
+        epsilon *= 2 
+
+    if label_contour is None:
+        print('No rectangular contour found')
+        return False
+
+    # If we did not find a rectangle, fail.
+#    if len(label_corners) != 4:
+#        print("Contour not rectangular, but of size %s" % len(contour_corners))
+#        return False
+
+    # Arrange corners in clockwise order
+    label_corners = corners(label_corners)
 
     # Draw contour on original image
     cv2.drawContours(im, [label_contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
     cv2.imwrite(fileNameContour, im)
 
-    epsilon = 50
-    contour_corners = cv2.approxPolyDP(label_contour, epsilon, True)
-    # Iteratively apply approximations to try to achieve a rectangle.
-    for i in range(2):
-        if len(contour_corners) == 4:
-            break
-        epsilon *= 2 
-        contour_corners = cv2.approxPolyDP(label_contour, epsilon, True)
-
-    # If we did not find a rectangle, fail.
-    if len(contour_corners) != 4:
-        print("Contour not rectangular, but of size %s" % len(contour_corners))
-        return False
-
-    # Arrange corners in clockwise order
-    contour_corners = corners(contour_corners)
-
-    # Find minimum containing (rotated) rectangle and relevant info
+    # Find minimum containing (rotated) rectangle to set up transformation image
     min_rect = cv2.minAreaRect(label_contour)
-    center = min_rect[0]
+#    center = min_rect[0] # Not necessary?
     size = (int(min_rect[1][0]), int(min_rect[1][1]))
     angle = min_rect[2]
 
@@ -196,10 +200,12 @@ def contour(imagepath, invert=False):
         size = (size[1], size[0])
 
     new_corners = corners(np.array([[0,0], [size[0],0], [size[0],size[1]], [0,size[1]]], np.float32))
-    M = cv2.getPerspectiveTransform(np.array(contour_corners, np.float32), new_corners)
+    M = cv2.getPerspectiveTransform(np.array(label_corners, np.float32), new_corners)
     label_im = cv2.warpPerspective(imageToBeCut, M, dsize=size)
 
     ret,thresh = cv2.threshold(label_im, 125, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+#    label_im = cv2.medianBlur(label_im,3)
+#    thresh = cv2.adaptiveThreshold(label_im, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 101, 5)
     cv2.equalizeHist(thresh, thresh)
     cv2.imwrite(fileNameFinal, thresh)
     return thresh
