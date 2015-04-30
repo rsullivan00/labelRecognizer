@@ -10,7 +10,7 @@ def apply_tesseract(im_path):
     Calls Tesseract on the image at im_path.
     Returns the text output.
     """
-    temp_file = os.path.basename(im_path).replace('.jpg', '')
+    temp_file = "temp"
     p = Popen([
         "tesseract",
         im_path,
@@ -20,8 +20,12 @@ def apply_tesseract(im_path):
     output, err = p.communicate()
     temp_file += ".txt"
     output = open(temp_file).read()
+    os.remove(temp_file)
+
+    # Print debugging information
     TESSDIR = "TESSERACT"
-    debug_file = open(os.path.join(TESSDIR, temp_file), 'w')
+    debug_filename = os.path.basename(im_path).replace('.jpg', '')
+    debug_file = open(os.path.join(TESSDIR, debug_filename), 'w')
     debug_file.write(output)
 
     return output
