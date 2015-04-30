@@ -85,14 +85,33 @@ def draw_image(image, name):
     """
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.startWindowThread()
-    cv2.resizeWindow(name, 800, 800)
+    cv2.resizeWindow(name, 1500, 2300)
     cv2.imshow(name, image)
     cv2.waitKey()
     cv2.destroyWindow(name)
 
+
 def invert_color(image):
     inverted = 255 - image
     return inverted
+
+
+# Most images seem to be approximately 5,000,000 pixels large.
+def downscale_im(im, threshold=2000000):
+    """
+    Recursively resize image until its size is less than the provided
+    threshold.
+
+    Returns the resized image.
+    """
+    im_x = len(im[0])
+    im_y = len(im)
+    im_size = im_x * im_y
+    if im_size > threshold:
+        return downscale_im(cv2.resize(im, (0, 0), fx=0.5, fy=0.5))
+
+    return im
+
 
 def contour(imagepath, invert=False):
     """
@@ -116,17 +135,18 @@ def contour(imagepath, invert=False):
     fileNameFinal = "FINAL/final" + fileName
 
     im = cv2.imread(imagepath)
+    im = downscale_im(im)
     cv2.imwrite(fileNameOriginal, im)
     im_x = len(im[0])
     im_y = len(im)
     im_size = im_x * im_y
 
-    imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     if invert:
         imgray = invert_color(imgray)
     imageToBeCut = imgray
     cv2.imwrite(fileNameGray, imgray)
-    imgray = cv2.medianBlur(imgray,3)
+    imgray = cv2.medianBlur(imgray, 3)
     #imgray = cv2.blur(imgray,(3,3))
     #imgray = cv2.GaussianBlur(imgray,(3,3), 3)
     cv2.imwrite(fileNameBlur, imgray)

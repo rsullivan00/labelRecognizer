@@ -1,18 +1,27 @@
-import jsonpickle
 import re
-from keywords import *
+from keywords import label_keywords, Keywords
+
 
 class Label:
-    """Label class contains all nutritional information corresponding to a food label."""
+    """
+    Label class contains all nutritional information corresponding
+    to a food label.
+    """
     def __init__(self, attr_list=None, keyword_map=None):
-        attrs = ['name', 'calories', 'total_fat', 'saturated_fat', 'trans_fat', 'poly_fat', 'mono_fat', 'cholesterol', 'sodium', 'potassium', 'carbohydrates', 'fiber', 'sugars', 'protein', 'skewed', 'not_bw', 'curved', 'wrinkled', 'shadowed', 'blurry']
+        attrs = list(Keywords.json.values()).extend([
+            'name', 'skewed', 'not_bw', 'curved',
+            'wrinkled', 'shadowed', 'blurry'])
 
         if keyword_map is not None:
-            for k in Keywords.label:
-                key = Keywords.label[k]
-                amount = keyword_map[key][0]
-                non_decimal = re.compile(r'[^\d.]+')
-                amount = non_decimal.sub('', amount)
+            non_decimal = re.compile(r'[^\d.]+')
+            for k in label_keywords:
+                key = label_keywords[k]
+                try:
+                    amount = keyword_map[key][0]
+                    amount = non_decimal.sub('', amount)
+                except KeyError:
+                    amount = None
+
                 setattr(self, k, amount)
 
             print(self)

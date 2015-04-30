@@ -1,0 +1,73 @@
+Calories *\d\d*
+Total Fat *\d\d*g *\d\d*%
+Total Fat *\d\d*g
+Total Fat *\d\d*mg *\d\d*%
+Total Fat *\d\d*mg
+Total Fat *\d\d*.\d\d*g *\d\d*%
+Total Fat *\d\d*.\d\d*g
+Total Fat *\d\d*.\d\d*mg *\d\d*%
+Total Fat *\d\d*.\d\d*mg
+Protein *\d\d*g *\d\d*%
+Protein *\d\d*g
+Protein *\d\d*mg *\d\d*%
+Protein *\d\d*mg
+Protein *\d\d*.\d\d*g *\d\d*%
+Protein *\d\d*.\d\d*g
+Protein *\d\d*.\d\d*mg *\d\d*%
+Protein *\d\d*.\d\d*mg
+Total Carbohydrates *\d\d*g *\d\d*%
+Total Carbohydrates *\d\d*g
+Total Carbohydrates *\d\d*mg *\d\d*%
+Total Carbohydrates *\d\d*mg
+Total Carbohydrates *\d\d*.\d\d*g *\d\d*%
+Total Carbohydrates *\d\d*.\d\d*g
+Total Carbohydrates *\d\d*.\d\d*mg *\d\d*%
+Total Carbohydrates *\d\d*.\d\d*mg
+Calories *\d\d*g *\d\d*%
+Calories *\d\d*g
+Calories *\d\d*mg *\d\d*%
+Calories *\d\d*mg
+Calories *\d\d*.\d\d*g *\d\d*%
+Calories *\d\d*.\d\d*g
+Calories *\d\d*.\d\d*mg *\d\d*%
+Calories *\d\d*.\d\d*mg
+Cholesterol *\d\d*g *\d\d*%
+Cholesterol *\d\d*g
+Cholesterol *\d\d*mg *\d\d*%
+Cholesterol *\d\d*mg
+Cholesterol *\d\d*.\d\d*g *\d\d*%
+Cholesterol *\d\d*.\d\d*g
+Cholesterol *\d\d*.\d\d*mg *\d\d*%
+Cholesterol *\d\d*.\d\d*mg
+Sodium *\d\d*g *\d\d*%
+Sodium *\d\d*g
+Sodium *\d\d*mg *\d\d*%
+Sodium *\d\d*mg
+Sodium *\d\d*.\d\d*g *\d\d*%
+Sodium *\d\d*.\d\d*g
+Sodium *\d\d*.\d\d*mg *\d\d*%
+Sodium *\d\d*.\d\d*mg
+Potassium *\d\d*g *\d\d*%
+Potassium *\d\d*g
+Potassium *\d\d*mg *\d\d*%
+Potassium *\d\d*mg
+Potassium *\d\d*.\d\d*g *\d\d*%
+Potassium *\d\d*.\d\d*g
+Potassium *\d\d*.\d\d*mg *\d\d*%
+Potassium *\d\d*.\d\d*mg
+Dietary Fiber *\d\d*g *\d\d*%
+Dietary Fiber *\d\d*g
+Dietary Fiber *\d\d*mg *\d\d*%
+Dietary Fiber *\d\d*mg
+Dietary Fiber *\d\d*.\d\d*g *\d\d*%
+Dietary Fiber *\d\d*.\d\d*g
+Dietary Fiber *\d\d*.\d\d*mg *\d\d*%
+Dietary Fiber *\d\d*.\d\d*mg
+Sugars *\d\d*g *\d\d*%
+Sugars *\d\d*g
+Sugars *\d\d*mg *\d\d*%
+Sugars *\d\d*mg
+Sugars *\d\d*.\d\d*g *\d\d*%
+Sugars *\d\d*.\d\d*g
+Sugars *\d\d*.\d\d*mg *\d\d*%
+Sugars *\d\d*.\d\d*mg

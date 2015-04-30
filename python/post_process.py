@@ -1,14 +1,18 @@
 import re
 from Levenshtein import distance
-from keywords import *
+from keywords import Keywords
 from label import Label
+import numpy as np
+from munkres import Munkres
 
-keywords = Keywords.label
 pairs = []
 
 _digits = re.compile('\d')
+
+
 def contains_digits(s):
     return bool(_digits.search(s))
+
 
 def make_pairs(raw_text):
     """
@@ -21,7 +25,7 @@ def make_pairs(raw_text):
     pairs = []
     for line in lines:
         words = line.strip().split(' ')
-        key = words[0] 
+        key = words[0]
         words = words[1:]
         for i, word in enumerate(words):
             if not contains_digits(word):
@@ -34,27 +38,48 @@ def make_pairs(raw_text):
 
     return pairs
 
+
+def match_bipartite(pairs, keywords):
+    """
+    Uses the Munkres bipartite matching algorithm to find the best
+    matching between the OCR pairs and label keywords.
+
+    Returns (keyword, (OCR key, OCR value))
+    """
+    pairs = list(pairs)
+    keywords = list(keywords)
+
+    distances = np.zeros((len(keywords), len(pairs)), dtype=np.int32).tolist()
+
+    for i, key in enumerate(keywords):
+        for j, pair in enumerate(pairs):
+            distances[i][j] = distance(pair[0], key)
+
+    m = Munkres()
+    # Copy distance matrix to preserve distances
+    indices = m.compute(distances.copy())
+
+    key_pairs = []
+    for i, j in indices:
+        keyword = keywords[i]
+        # Skip if half of the characters are wrong.
+        if distances[i][j] <= len(keyword)/2:
+            key_pairs.append((keyword, pairs[j][1]))
+
+    return key_pairs
+
+
 def keyword_pairs(pairs):
     """
     Take a list of pairs and return a list of pairs,
     with first values having the appropriate keyword.
     (keyword, stuff)
     """
-    if len(pairs) < len(keywords):
-        return False
 
-    keyword_pairs = []
-    for keyword in keywords:
-        keyword = keywords[keyword]
-        min_match = (-1, 9999)
-        for i,p in enumerate(pairs):
-            d = distance(keyword, p[0])
-            if d < min_match[1]:
-                 min_match = (i, d)
+    keywords = Keywords.label.values()
 
-        keyword_pairs.append((keyword, pairs.pop(min_match[0])[1]))
+    return match_bipartite(pairs, keywords)
 
-    return keyword_pairs
 
 def split_percentages(key_pairs):
     """
@@ -67,6 +92,9 @@ def split_percentages(key_pairs):
     def percent_tuple(pair):
         right = pair[1].split(' ')
         amount = right[0]
+        if amount[-1] == '9':
+            amount = amount[:-1] + 'g'
+
         pct = (' ').join(right[1:])
         return (pair[0], amount, pct)
 
@@ -74,14 +102,15 @@ def split_percentages(key_pairs):
     for key_pair in key_pairs:
         key, right = key_pair
         try:
-            if key == keywords.calories:
+            if key == Keywords.label.calories:
                 tuples.append(calories_tuple(key_pair))
             else:
                 tuples.append(percent_tuple(key_pair))
-        except:
+        except IndexError:
             tuples.append((key_pair[0], key_pair[1], None))
 
     return tuples
+
 
 def post_process(raw_text):
     """
@@ -89,11 +118,11 @@ def post_process(raw_text):
     the appropriate information.
     """
     all_pairs = make_pairs(raw_text)
-    if all_pairs == False:
+    if all_pairs is False:
         return False
     key_pairs = keyword_pairs(all_pairs)
-    if key_pairs == False: 
+    if key_pairs is False:
         return False
     key_tuples = split_percentages(key_pairs)
-    key_map = dict((a, (b,c)) for a, b, c, in key_tuples)
+    key_map = dict((a, (b, c)) for a, b, c, in key_tuples)
     return Label(keyword_map=key_map)
