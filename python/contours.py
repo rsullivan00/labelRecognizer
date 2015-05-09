@@ -6,6 +6,15 @@ import random
 import numpy as np
 from categories import easy_labels
 
+
+def get_random_color():
+    return (
+        random.randint(0, 255),
+        random.randint(0, 255),
+        random.randint(0, 255)
+    )
+
+
 def corners(cnt):
     """
     Reorders 4 corners into clockwise order.
@@ -16,15 +25,16 @@ def corners(cnt):
 
     rect = np.zeros(cnt.shape, dtype=cnt.dtype)
 
-    s = np.sum(cnt, axis = a)
+    s = np.sum(cnt, axis=a)
     rect[0] = cnt[np.argmin(s)]
     rect[2] = cnt[np.argmax(s)]
 
-    diff = np.diff(cnt, axis = a)
+    diff = np.diff(cnt, axis=a)
     rect[1] = cnt[np.argmin(diff)]
     rect[3] = cnt[np.argmax(diff)]
 
     return rect
+
 
 def contour_filter_size(contours, size_thresh):
     """
@@ -37,11 +47,13 @@ def contour_filter_size(contours, size_thresh):
         if area > size_thresh:
             filtered_contours.append(cnt)
 
-    print('%d/%d large contours found' % (len(filtered_contours), len(contours)))
+    print('%d/%d large contours found' % (
+        len(filtered_contours), len(contours)))
     return filtered_contours
 
+
 def contour_filter_centroid(contours, distance_thresh, centroid):
-    """ 
+    """
     Calculate Euclidean distances of contour centroids,
     only keeping contours with distances less than the
     second passed parameter.
@@ -62,8 +74,10 @@ def contour_filter_centroid(contours, distance_thresh, centroid):
         if dist < distance_thresh:
             filtered_contours.append(cnt)
 
-    print('%d/%d centroid contours found' % (len(filtered_contours), len(contours)))
+    print('%d/%d centroid contours found' % (
+        len(filtered_contours), len(contours)))
     return filtered_contours
+
 
 def contour_filter_center(contours, centroid):
     """
@@ -76,12 +90,15 @@ def contour_filter_center(contours, centroid):
         if cv2.pointPolygonTest(cnt, centroid, False) > 0:
             filtered_contours.append(cnt)
 
-    print('%d/%d center contours found' % (len(filtered_contours), len(contours)))
+    print('%d/%d center contours found' % (
+        len(filtered_contours), len(contours)))
     return filtered_contours
+
 
 def draw_image(image, name):
     """
-    Draws the Mat image on a frame with name 'name, waits for a keypress, then closes the window.'
+    Draws the Mat image on a frame with name 'name,
+    waits for a keypress, then closes the window.'
     """
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.startWindowThread()
@@ -144,21 +161,25 @@ def contour(imagepath, invert=False):
     imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     if invert:
         imgray = invert_color(imgray)
+
     imageToBeCut = imgray
     cv2.imwrite(fileNameGray, imgray)
     imgray = cv2.medianBlur(imgray, 3)
-    #imgray = cv2.blur(imgray,(3,3))
-    #imgray = cv2.GaussianBlur(imgray,(3,3), 3)
     cv2.imwrite(fileNameBlur, imgray)
     cv2.equalizeHist(imgray, imgray)
     cv2.imwrite(fileNameHist, imgray)
-    #ret,thresh = cv2.threshold(imgray,125,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
     imgray = cv2.bilateralFilter(imgray, 5, 50, 50)
     cv2.imwrite(fileNameMThresh, imgray)
-    thresh = cv2.adaptiveThreshold(imgray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 101, 5)
+    thresh = cv2.adaptiveThreshold(
+        imgray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY, 101, 5
+    )
+
     cv2.imwrite(fileNameGThresh, thresh)
-    #thresh = cv2.adaptiveThreshold(thresh, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    image, contours, hierarchy = cv2.findContours(thresh.copy(),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+    image, contours, hierarchy = cv2.findContours(
+        thresh.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
+    )
 
     # Filter based on contour size
     large_contours = contour_filter_size(contours, im_size/10)
@@ -166,9 +187,9 @@ def contour(imagepath, invert=False):
     # Now filter based on the location of the contour's centroid
     centroid = (int(im_x/2), int(im_y/2))
 
-    for x,j in enumerate(large_contours):
+    for x, j in enumerate(large_contours):
         name = fileNameContour.replace('.jpg', '-' + str(x) + '.jpg')
-        cv2.drawContours(im, [j], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+        cv2.drawContours(im, [j], -1, get_random_color(), -5)
         cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
         cv2.imwrite(name, im)
         im = cv2.imread(imagepath)
@@ -182,6 +203,7 @@ def contour(imagepath, invert=False):
     epsilon = 50
     label_corners = None
     label_contour = None
+
     # Iteratively apply approximations to try to achieve a rectangle.
     for i in range(2):
         for l_c in label_contours:
@@ -190,27 +212,27 @@ def contour(imagepath, invert=False):
                 label_corners = contour_corners
                 label_contour = l_c
                 break
-        epsilon *= 2 
+        epsilon *= 2
 
     if label_contour is None:
         print('No rectangular contour found')
         return False
 
     # If we did not find a rectangle, fail.
-#    if len(label_corners) != 4:
-#        print("Contour not rectangular, but of size %s" % len(contour_corners))
-#        return False
+    if len(label_corners) != 4:
+        print("Contour not rectangular, but of size %s" % len(contour_corners))
+        return False
 
     # Arrange corners in clockwise order
     label_corners = corners(label_corners)
 
     # Draw contour on original image
-    cv2.drawContours(im, [label_contour], -1, (random.randint(0,255),random.randint(0,255),random.randint(0,255)), -5)
+    cv2.drawContours(im, [label_contour], -1, get_random_color(), -5)
     cv2.imwrite(fileNameContour, im)
 
-    # Find minimum containing (rotated) rectangle to set up transformation image
+    # Find minimum containing (rotated) rectangle
+    # to set up transformation image
     min_rect = cv2.minAreaRect(label_contour)
-#    center = min_rect[0] # Not necessary?
     size = (int(min_rect[1][0]), int(min_rect[1][1]))
     angle = min_rect[2]
 
@@ -219,22 +241,37 @@ def contour(imagepath, invert=False):
         angle = angle % 45
         size = (size[1], size[0])
 
-    new_corners = corners(np.array([[0,0], [size[0],0], [size[0],size[1]], [0,size[1]]], np.float32))
-    M = cv2.getPerspectiveTransform(np.array(label_corners, np.float32), new_corners)
+    new_corners = corners(
+        np.array(
+            [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]],
+            np.float32
+        )
+    )
+    M = cv2.getPerspectiveTransform(
+        np.array(label_corners, np.float32),
+        new_corners
+    )
     label_im = cv2.warpPerspective(imageToBeCut, M, dsize=size)
 
-    ret,thresh = cv2.threshold(label_im, 125, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-#    label_im = cv2.medianBlur(label_im,3)
-#    thresh = cv2.adaptiveThreshold(label_im, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 101, 5)
+    thresh = cv2.adaptiveThreshold(
+        label_im, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY, 101, 5
+    )
     cv2.equalizeHist(thresh, thresh)
     cv2.imwrite(fileNameFinal, thresh)
     return thresh
 
+
 def process_all_easy(dirpath):
+    """
+    Convenience method for running the contour function on all
+    jpg files in a directory.
+    """
     labels = easy_labels()
     for label in labels:
         print(label.name)
         contour(os.path.join(dirpath, label.name + '.jpg'))
+
 
 def main():
     pass
@@ -248,4 +285,5 @@ if __name__ == '__main__':
         elif os.path.isfile(arg):
             contour(arg)
         else:
-            print('Usage:\n\t\'python3 contours.py <path>\'\n(path should be a file or directory).')
+            print('Usage:\n\t\'python3 contours.py <path>\'\n\
+                    (path should be a file or directory).')

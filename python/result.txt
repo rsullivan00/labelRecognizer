@@ -1,0 +1,7 @@
+With image downscaling to 2000000:
+21/22 labels processed to completion
+212/273 keywords correct for completed labels
+
+Without downscaling:
+21/22 labels processed to completion
+216/273 keywords correct for completed labels
