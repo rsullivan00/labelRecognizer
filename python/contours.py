@@ -137,6 +137,26 @@ def adaptive_threshold(image):
     )
 
 
+def approx_rect(contours, epsilon=50):
+    """
+    Iteratively apply approximations to a contour to make it a rectangle.
+
+    If no rectangular approximation is found, return False.
+    """
+    label_contour = None
+    label_corners = None
+    for i in range(2):
+        for c in contours:
+            contour_corners = cv2.approxPolyDP(c, epsilon, True)
+            if len(contour_corners) == 4:
+                label_corners = contour_corners
+                label_contour = c
+                break
+        epsilon *= 2
+
+    return label_contour, label_corners
+
+
 def contour(imagepath, invert=False, demo=False):
     """
     Finds a label contour in the specified image.
@@ -205,24 +225,12 @@ def contour(imagepath, invert=False, demo=False):
     if len(label_contours) == 0:
         return False
 
-    name = filenames['contour']
-    cv2.drawContours(im, [label_contours[0]], -1, get_random_color(), -5)
-    cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
-    cv2.imwrite(name, im)
+#    name = filenames['contour']
+#    cv2.drawContours(im, [label_contours[0]], -1, get_random_color(), -5)
+#    cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
+#    cv2.imwrite(name, im)
 
-    epsilon = 50
-    label_corners = None
-    label_contour = None
-
-    # Iteratively apply approximations to try to achieve a rectangle.
-    for i in range(2):
-        for l_c in label_contours:
-            contour_corners = cv2.approxPolyDP(l_c, epsilon, True)
-            if len(contour_corners) == 4:
-                label_corners = contour_corners
-                label_contour = l_c
-                break
-        epsilon *= 2
+    label_contour, label_corners = approx_rect(label_contours)
 
     if label_contour is None:
         print('No rectangular contour found')
@@ -252,6 +260,8 @@ def contour(imagepath, invert=False, demo=False):
             np.float32
         )
     )
+#    tps = cv2.createThinPlateSplineShapeTransformer(25000)
+#    tps.estimateTransformation(label_contour, new_corners
     M = cv2.getPerspectiveTransform(
         np.array(label_corners, np.float32),
         new_corners
