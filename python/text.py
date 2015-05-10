@@ -1,15 +1,16 @@
-from subprocess import Popen, PIPE, call
+from subprocess import Popen, PIPE
 from keywords import *
 import os
 
 
 # No luck with pytesseract or python3-tesseract,
 # now just calling it from the shell
-def apply_tesseract(im_path):
+def apply_tesseract(im_path, demo=False):
     """
     Calls Tesseract on the image at im_path.
     Returns the text output.
     """
+    print(im_path)
     temp_file = "temp"
     p = Popen([
         "tesseract",
@@ -24,7 +25,10 @@ def apply_tesseract(im_path):
 
     # Print debugging information
     TESSDIR = "TESSERACT"
-    debug_filename = os.path.basename(im_path).replace('.jpg', '')
+    if demo:
+        TESSDIR = "demo"
+    debug_filename = "tess_" + os.path.basename(im_path).\
+        lower().replace('.jpg', '.txt').replace('tmp_', '')
     debug_file = open(os.path.join(TESSDIR, debug_filename), 'w')
     debug_file.write(output)
 

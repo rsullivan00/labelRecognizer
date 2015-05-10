@@ -112,7 +112,7 @@ def split_percentages(key_pairs):
     return tuples
 
 
-def post_process(raw_text):
+def post_process(raw_text, demo=False):
     """
     Consume OCR text, producing a Label object with
     the appropriate information.

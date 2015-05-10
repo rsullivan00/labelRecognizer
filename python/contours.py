@@ -36,7 +36,7 @@ def corners(cnt):
     return rect
 
 
-def contour_filter_size(contours, size_thresh):
+def filter_contours_size(contours, size_thresh):
     """
     Filters list of contours to contours that are at least
     the size of the threshold passed (size is pixel area).
@@ -52,7 +52,7 @@ def contour_filter_size(contours, size_thresh):
     return filtered_contours
 
 
-def contour_filter_centroid(contours, distance_thresh, centroid):
+def filter_contours_centroid(contours, distance_thresh, centroid):
     """
     Calculate Euclidean distances of contour centroids,
     only keeping contours with distances less than the
@@ -79,7 +79,7 @@ def contour_filter_centroid(contours, distance_thresh, centroid):
     return filtered_contours
 
 
-def contour_filter_center(contours, centroid):
+def filter_contours_center(contours, centroid):
     """
     Eliminate all contours that do not contain the center of the image.
     """
@@ -130,7 +130,14 @@ def downscale_im(im, threshold=2000000):
     return im
 
 
-def contour(imagepath, invert=False):
+def adaptive_threshold(image):
+    return cv2.adaptiveThreshold(
+        image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY, 101, 5
+    )
+
+
+def contour(imagepath, invert=False, demo=False):
     """
     Finds a label contour in the specified image.
     Returns an image with just the extracted label, or False if
@@ -142,18 +149,19 @@ def contour(imagepath, invert=False):
         return False
 
     fileName = os.path.basename(imagepath)
-    fileNameGray = "GRAY/gray" + fileName
-    fileNameBlur = "BLUR/blur" + fileName
-    fileNameGThresh = "THRESHOLDG/thresh" + fileName
-    fileNameMThresh = "THRESHOLDM/thresh" + fileName
-    fileNameContour = "CONTOUR/contour" + fileName
-    fileNameOriginal = "ORIGINAL/original" + fileName
-    fileNameHist = "HIST/hist" + fileName
-    fileNameFinal = "FINAL/final" + fileName
+
+    filenames = {}
+    image_types = ["gray", "blur", "thresholdg", "thresholdm",
+                   "contour", "original", "hist", "final"]
+    for it in image_types:
+        dir_path = it.upper()
+        if demo:
+            dir_path = 'demo'
+        filenames[it] = os.path.join(dir_path, it.lower()) + fileName
 
     im = cv2.imread(imagepath)
     im = downscale_im(im)
-    cv2.imwrite(fileNameOriginal, im)
+    cv2.imwrite(filenames['original'], im)
     im_x = len(im[0])
     im_y = len(im)
     im_size = im_x * im_y
@@ -163,42 +171,44 @@ def contour(imagepath, invert=False):
         imgray = invert_color(imgray)
 
     imageToBeCut = imgray
-    cv2.imwrite(fileNameGray, imgray)
+    cv2.imwrite(filenames['gray'], imgray)
     imgray = cv2.medianBlur(imgray, 3)
-    cv2.imwrite(fileNameBlur, imgray)
+    cv2.imwrite(filenames['blur'], imgray)
     cv2.equalizeHist(imgray, imgray)
-    cv2.imwrite(fileNameHist, imgray)
+    cv2.imwrite(filenames['hist'], imgray)
 
-    imgray = cv2.bilateralFilter(imgray, 5, 50, 50)
-    cv2.imwrite(fileNameMThresh, imgray)
-    thresh = cv2.adaptiveThreshold(
-        imgray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY, 101, 5
-    )
+    imgray = cv2.bilateralFilter(imgray, 5, 20, 50)
+    cv2.imwrite(filenames['thresholdm'], imgray)
+    thresh = adaptive_threshold(imgray)
 
-    cv2.imwrite(fileNameGThresh, thresh)
+    cv2.imwrite(filenames['thresholdg'], thresh)
     image, contours, hierarchy = cv2.findContours(
         thresh.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
     )
 
     # Filter based on contour size
-    large_contours = contour_filter_size(contours, im_size/10)
+    large_contours = filter_contours_size(contours, im_size/10)
 
     # Now filter based on the location of the contour's centroid
     centroid = (int(im_x/2), int(im_y/2))
 
-    for x, j in enumerate(large_contours):
-        name = fileNameContour.replace('.jpg', '-' + str(x) + '.jpg')
-        cv2.drawContours(im, [j], -1, get_random_color(), -5)
-        cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
-        cv2.imwrite(name, im)
-        im = cv2.imread(imagepath)
+#    for x, j in enumerate(large_contours):
+#        name = filenames['contour'].replace('.jpg', '-' + str(x) + '.jpg')
+#        cv2.drawContours(im, [j], -1, get_random_color(), -5)
+#        cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
+#        cv2.imwrite(name, im)
+#        im = cv2.imread(imagepath)
 
     # Filter to contours containing central point
-    label_contours = contour_filter_center(large_contours, centroid)
+    label_contours = filter_contours_center(large_contours, centroid)
 
     if len(label_contours) == 0:
         return False
+
+    name = filenames['contour']
+    cv2.drawContours(im, [label_contours[0]], -1, get_random_color(), -5)
+    cv2.circle(im, centroid, 20, (0, 0, 0), thickness=-1)
+    cv2.imwrite(name, im)
 
     epsilon = 50
     label_corners = None
@@ -218,17 +228,12 @@ def contour(imagepath, invert=False):
         print('No rectangular contour found')
         return False
 
-    # If we did not find a rectangle, fail.
-    if len(label_corners) != 4:
-        print("Contour not rectangular, but of size %s" % len(contour_corners))
-        return False
-
     # Arrange corners in clockwise order
     label_corners = corners(label_corners)
 
     # Draw contour on original image
     cv2.drawContours(im, [label_contour], -1, get_random_color(), -5)
-    cv2.imwrite(fileNameContour, im)
+    cv2.imwrite(filenames['contour'], im)
 
     # Find minimum containing (rotated) rectangle
     # to set up transformation image
@@ -253,12 +258,9 @@ def contour(imagepath, invert=False):
     )
     label_im = cv2.warpPerspective(imageToBeCut, M, dsize=size)
 
-    thresh = cv2.adaptiveThreshold(
-        label_im, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY, 101, 5
-    )
+    thresh = adaptive_threshold(label_im)
     cv2.equalizeHist(thresh, thresh)
-    cv2.imwrite(fileNameFinal, thresh)
+    cv2.imwrite(filenames['final'], thresh)
     return thresh
 
 
