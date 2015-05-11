@@ -250,9 +250,9 @@ def contour(imagepath, invert=False, demo=False):
     angle = min_rect[2]
 
     # Account for rotated images
-    if abs(angle) > 45:
-        angle = angle % 45
-        size = (size[1], size[0])
+#    if abs(angle) > 45:
+#        angle = angle % 45
+#        size = (size[1], size[0])
 
     new_corners = corners(
         np.array(

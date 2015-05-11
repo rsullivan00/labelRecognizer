@@ -1,11 +1,34 @@
-Meeting April 7th:
-1)In the case where we have multiple center contours returned, choose more intelligently by Choosing a contour that easily approximates to a rectangle
-2)Save final transformed image or print the approximation rectangle
-3)Current solution does a good job of finding contour, but we should take that area from the ORIGINAL image, and process that for final label extraction.
+Test sets:
+    Standard
+    Colored
+    Skew
+    Shadow
+    Curved
 
-Ideas April 5th:
-Problem cases:
-1) Inverted color schemes
-2) Faded background, trying sharpening (ask Nate)
-3) Try machine learning for categorization (feature extraction)
-    Look at histograms of images, characterize histograms based on common features
+Possibly be able to log accuracy for:
+    individual labels
+    each nutrient
+
+Nutrients appear in a defined order.
+The order:
+    Calories
+    Total Fat
+    Sat Fat
+    Trans Fat
+    Poly Fat
+    Mono Fat
+    Cholesterol
+    Sodium
+    Potassium
+    Total Carbs
+    Fiber
+    Sugars
+    Protein
+
+How do we incorporate this idea?
+list<(trash_key, trash_value, line number)> and list<keyword>
+Graph matching is based on edit distance b/t
+    edit_d(trash_key, keyword)
+
+Try machine learning for categorization (feature extraction)
+Look at histograms of images, characterize histograms based on common features

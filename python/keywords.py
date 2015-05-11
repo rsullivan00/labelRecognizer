@@ -35,9 +35,31 @@ json_keywords = {
     'sugars': 'sugars'
 }
 
+# First pass at categorization
+#    'blurry': 'blurry',
+#    'wrinkled': 'wrinkled',
+#    'shadowed': 'shadowed',
+#    'skewed': 'skewed',
+#    'curved': 'curved',
+#    'not_bw': 'not_bw',
+
+type_keywords = {
+    'color': 'color',
+    'skewed': 'skewed',
+    'curved': 'curved',
+    'lighting': 'lighting',
+    'horizontal': 'horizontal'
+}
+
 # The Keywords object can be used to access both sets of keywords.
 Keywords = {
     'json': json_keywords,
-    'label': label_keywords
+    'label': label_keywords,
+    'spec_types': type_keywords,
+    'include': 'include',
+    'standard': 'standard'
 }
+
+# Make the Keywords object attribute-accessible
+# e.g. Keywords.label.calories == 'Calories'
 Keywords = AttrDict(Keywords)

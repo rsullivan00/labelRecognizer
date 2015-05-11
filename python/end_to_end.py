@@ -25,6 +25,7 @@ def test_all_easy(dirpath):
             correct, nkeys, ocr_label = test_label(impath, label)
             ocr_results.append((correct, nkeys))
         except TypeError:
+            print("Label %s failed" % label.name)
             pass
 
     completed = [x for x in ocr_results if x]
@@ -44,7 +45,6 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
     If the jsonpath argument is provided, information
     from that file is used instead of the other specified arguments.
     """
-    print(jsonpath)
     if jsonpath is not None:
         json_file = open(jsonpath)
         label = jsonpickle.decode(json_file.read())
@@ -55,6 +55,7 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
     if ocr_label is False:
         return False
 
+    print(label)
     # Compare this label with the JSON label object
     if label is not None:
         correct = 0
@@ -93,14 +94,6 @@ def demo_label(impath, jsonpath='../db/demo.json',
     text_filenames = ["tess_" + base + ".txt", "result_" + base + ".js"]
     text_filepaths = [os.path.join(demo_dir, x) for x in text_filenames]
 
-#    remove_keys = ['skewed', 'wrinkled', 'name', 'py/object',
-#                   'curved', 'blurry', 'shadowed']
-
-#    print(label)
-#    # Remove keys we don't want to show
-#    for key in remove_keys:
-#        label.__dict__.pop(key)
-
     # Write label object to text file
     with open(text_filepaths[-1], 'w') as result_file:
         pprint(label.__dict__, stream=result_file)
@@ -113,21 +106,19 @@ def demo_label(impath, jsonpath='../db/demo.json',
 def rotate(img, orientation):
     # Taken from http://stackoverflow.com/questions/
     # 22045882/modify-or-delete-exif-tag-orientation-in-python
-    print('In rotate')
-    if orientation is 6:
+    if orientation == 6:
         img = img.rotate(-90)
-        print('Rotated bitch')
-    elif orientation is 8:
+    elif orientation == 8:
         img = img.rotate(90)
-    elif orientation is 3:
+    elif orientation == 3:
         img = img.rotate(180)
-    elif orientation is 2:
+    elif orientation == 2:
         img = img.transpose(Image.FLIP_LEFT_RIGHT)
-    elif orientation is 5:
+    elif orientation == 5:
         img = img.rotate(-90).transpose(Image.FLIP_LEFT_RIGHT)
-    elif orientation is 7:
+    elif orientation == 7:
         img = img.rotate(90).transpose(Image.FLIP_LEFT_RIGHT)
-    elif orientation is 4:
+    elif orientation == 4:
         img = img.rotate(180).transpose(Image.FLIP_LEFT_RIGHT)
 
     return img
@@ -139,15 +130,15 @@ def end_to_end(impath, show=False, demo=False):
     """
 
     start = timer()
-    try:
-        img = Image.open(impath)
-        exif_data = img._getexif()
-        # orientation tag is 0x0112
-        orientation = exif_data[274]
-        rotate(img, orientation)
-        img.save(impath)
-    except TypeError:
-        pass
+#    try:
+#        img = Image.open(impath)
+#        exif_data = img._getexif()
+#        # orientation tag is 0x0112
+#        orientation = exif_data[274]
+#        rotate(img, orientation)
+#        img.save(impath)
+#    except TypeError:
+#        pass
 
     label_im = contour(impath, demo=demo)
     if label_im is False:
