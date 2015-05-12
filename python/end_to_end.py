@@ -123,7 +123,7 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
     print(ocr_label)
     print('')
     # Compare this label with the JSON label object
-    if label is not None:
+    if label is not None and ocr_label is not None:
         results = AttrDict({'correct': [], 'incorrect': []})
         for k in Keywords.json.values():
             if label[k] == ocr_label[k]:
@@ -132,6 +132,8 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
                 results.incorrect.append(k)
 
         return (results, ocr_label)
+
+    return ocr_label
 
 
 def demo_label(impath, jsonpath='../db/demo.json',
@@ -236,9 +238,15 @@ if __name__ == '__main__':
         elif os.path.isdir(arg):
             test_labels(arg)
         elif os.path.isfile(arg):
-            jsonPath = '../db/' + sys.argv[2] + '.json'
-            ret, label = test_label(arg, None, jsonPath)
-            print('%d/%d Correct' % (len(ret.correct), (len(ret.correct) + len(ret.incorrect))))
+            json_path = None
+            if len(sys.argv) > 2:
+                json_path = '../db/' + sys.argv[2] + '.json'
+            ret = test_label(arg, jsonpath=json_path)
+            if ret is not None:
+                ret, label = ret
+                print('%d/%d Correct' % (len(ret.correct),
+                                        (len(ret.correct) +
+                                            len(ret.incorrect))))
         else:
             print('Usage:\n\t\'python3 end_to_end.py <path>\'\n\
                     (path should be a file or directory).')
