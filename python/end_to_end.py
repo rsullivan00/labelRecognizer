@@ -229,8 +229,8 @@ if __name__ == '__main__':
             test_labels(arg)
         elif os.path.isfile(arg):
             jsonPath = '../db/' + sys.argv[2] + '.json'
-            ret = test_label(arg, None, jsonPath)
-            print('%d/%d Correct' % (ret[0], ret[1]))
+            ret, label = test_label(arg, None, jsonPath)
+            print('%d/%d Correct' % (len(ret.correct), (len(ret.correct) + len(ret.incorrect))))
         else:
             print('Usage:\n\t\'python3 end_to_end.py <path>\'\n\
                     (path should be a file or directory).')

@@ -40,13 +40,13 @@ def make_pairs(raw_text):
 
         alpha = 0
         lastAlpha = False
-        for i in range(len(line)):
-            if(contains_alpha(line[i])):
+        for k in range(len(line)):
+            if(contains_alpha(line[k])):
                 alpha += 1
                 lastAlpha = True
-            if(contains_digits(line[i]) and (alpha > 3)):
+            if(contains_digits(line[k]) and (alpha > 3)):
                 if(lastAlpha):
-                    line = line[0:(i - 1)] + ' ' + line[i:(len(line) - 1)]
+                    line = line[0:(k - 1)] + ' ' + line[k:(len(line) - 1)]
                 break
 
         words = line.strip().split(' ')
@@ -234,7 +234,7 @@ def fix_garbage_sugar(pairs):
         for i in range(slide):
             temp = pair[0]
             #print(temp[i:(5 + i)])
-            dist = distance(Keyword.label.sugar, temp[i:(5 + i)])
+            dist = distance(Keywords.label.sugars, temp[i:(5 + i)])
             if dist <= 2:
                 i = pair[2]
                 done = True
@@ -245,7 +245,7 @@ def fix_garbage_sugar(pairs):
     for pair in pairs:
         name = pair[0]
         if(pair[2] == i):
-            name = Keyword.label.sugar
+            name = Keywords.label.sugars
         betterPairs.append((name, pair[1], pair[2]))
 
     return betterPairs
