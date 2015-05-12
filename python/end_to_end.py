@@ -55,7 +55,7 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
     if ocr_label is False:
         return False
 
-    print(label)
+    print(ocr_label)
     # Compare this label with the JSON label object
     if label is not None:
         correct = 0
@@ -120,8 +120,6 @@ def end_to_end(impath, show=False, demo=False):
         if o_data is not None:
             orientation = int(o_data)
 
-    print(orientation)
-
     label_im = contour(impath, demo=demo, orientation=orientation)
     if label_im is False:
         label_im = contour(impath, invert=True, demo=demo)
@@ -146,6 +144,7 @@ def end_to_end(impath, show=False, demo=False):
 
     start = timer()
     ocr_label = post_process(output, demo=demo)
+
     end = timer()
     print('Post process time: %2f' % (end-start))
 

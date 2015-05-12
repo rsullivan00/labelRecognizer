@@ -160,7 +160,7 @@ def approx_rect(contours, epsilon=50):
 def get_angle(orientation):
     # Taken from http://stackoverflow.com/questions/
     # 22045882/modify-or-delete-exif-tag-orientation-in-python
-    print('Orientation: %s' % orientation)
+    # print('Orientation: %s' % orientation)
     if orientation == 6:
         return -90
     elif orientation == 8:
@@ -173,9 +173,8 @@ def get_angle(orientation):
 
 
 def rotate_image(image, angle):
-    print("Rotate %s" % angle)
+    # print("Rotate %s" % angle)
     image_center = tuple(np.array(image.shape[0:2])/2)
-    print(image_center)
     rot_mat = cv2.getRotationMatrix2D(
         image_center, angle, 1.0)
     result = cv2.warpAffine(
@@ -186,7 +185,7 @@ def rotate_image(image, angle):
 # Adapted from here:
 # http://stackoverflow.com/questions/16265673/rotate-image-by-90-180-or-270-degrees 
 def rotate_image_90n(image, angle=0):
-    print("Rotate %s" % angle)
+    # print("Rotate %s" % angle)
     n = ((angle/90) % 4) * 90
 
     flip_h_or_v = 1
@@ -229,8 +228,6 @@ def contour(imagepath, invert=False, demo=False, orientation=1):
     angle = get_angle(orientation)
     if angle != 0:
         im = rotate_image_90n(im, angle)
-
-    draw_image(im, 'test')
 
     cv2.imwrite(filenames['original'], im)
     im_x = len(im[0])
@@ -298,8 +295,12 @@ def contour(imagepath, invert=False, demo=False, orientation=1):
     # to set up transformation image
     min_rect = cv2.minAreaRect(label_contour)
     size = (int(min_rect[1][0]), int(min_rect[1][1]))
+    angle = min_rect[2]
 
-    size = (size[1], size[0])
+    # Account for rotated images
+    if abs(angle) > 45:
+        angle = angle % 45
+        size = (size[1], size[0])
 
     np_corners = np.array(
         [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]],

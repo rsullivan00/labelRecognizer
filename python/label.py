@@ -46,9 +46,13 @@ class Label:
 
         if keyword_map is not None:
             for attr in attrs:
-                try:
-                    amount = parse_attr_val(attr, keyword_map[attr])
-                except KeyError:
+                key = attr
+                if key in Keywords.label:
+                    key = Keywords.label[attr]
+
+                if key in keyword_map:
+                    amount = parse_attr_val(attr, keyword_map[key])
+                else:
                     amount = None
 
                 setattr(self, attr, amount)

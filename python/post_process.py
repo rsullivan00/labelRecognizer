@@ -176,6 +176,17 @@ def remove_bad_pairs(pairs):
     return good_pairs
 
 
+def clean_values(tuples):
+    clean_tuples = []
+    for t in tuples:
+        t_new = list(t)
+        if t_new[1] is not None:
+            t_new[1] = re.sub('[^0-9.]', '', t_new[1])
+        clean_tuples.append(tuple(t_new))
+
+    return clean_tuples
+
+
 def post_process(raw_text, demo=False):
     """
     Consume OCR text, producing a Label object with
@@ -187,6 +198,7 @@ def post_process(raw_text, demo=False):
     good_pairs = remove_bad_pairs(all_pairs)
     key_pairs = keyword_pairs(good_pairs)
     key_tuples = split_percentages(key_pairs)
+    key_tuples = clean_values(key_tuples)
     # Don't use percentages or line numbers for now
     key_map = dict((a, b) for a, b, c, d in key_tuples)
     return Label(keyword_map=key_map)
