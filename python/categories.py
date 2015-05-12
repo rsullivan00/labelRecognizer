@@ -1,7 +1,6 @@
 import sys
 import os
 import jsonpickle
-from label import Label
 from keywords import Keywords
 
 type_keys = Keywords.spec_types
@@ -103,7 +102,7 @@ def standard_labels(json_dir="../db"):
     """
     Returns a list of Label objects that are marked as 'standard'.
     """
-    return spec_type_labels(Keywords.horizontal, json_dir)
+    return easy_labels(json_dir)
 
 
 def skewed_labels(json_dir="../db", exclusive=True):
@@ -143,7 +142,7 @@ def colored_labels(json_dir="../db", exclusive=True):
     If the 'exclusive' flag is set, Labels with any other special
     type are excluded.
     """
-    return spec_type_labels(type_keys.colored, json_dir, exclusive)
+    return spec_type_labels(type_keys.color, json_dir, exclusive)
 
 
 def horizontal_labels(json_dir="../db", exclusive=True):

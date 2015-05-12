@@ -1,8 +1,10 @@
 from contours import contour, draw_image
-from categories import easy_labels
+from categories import (
+    easy_labels, skewed_labels, lighting_labels, standard_labels,
+    curved_labels, colored_labels, horizontal_labels)
 from text import apply_tesseract
 from post_process import post_process
-from keywords import *
+from keywords import Keywords
 import cv2
 import sys
 import os
@@ -11,31 +13,85 @@ from pprint import pprint
 from PIL import Image
 from timeit import default_timer as timer
 from subprocess import call
+from attrdict import AttrDict
 
 
-def test_all_easy(dirpath):
+def test_labels(dirpath, labels=None):
     """
     Runs a complete label test on every .jpg in the specified directory.
     """
-    labels = easy_labels()
+    if labels is None:
+        labels = easy_labels()
     ocr_results = []
+    failed = []
     for label in labels:
         impath = os.path.join(dirpath, label.name + '.jpg')
         ret = test_label(impath, label)
         if ret:
-            correct, nkeys, ocr_label = ret
-            ocr_results.append((correct, nkeys))
+            results, ocr_label = ret
+            ocr_results.append((results, label))
         else:
             print("Label %s failed" % label.name)
+            failed.append(label)
 
     completed = [x for x in ocr_results if x]
     print('%d/%d labels processed to completion' % (
         len(completed), len(labels)))
+    failed_str = ', '.join([l.name for l in failed])
+    print('Failed labels: %s' % failed_str)
 
-    total_correct = sum(x[0] for x in completed)
-    total = completed[0][1] * len(completed)
+    total_correct = sum(len(x.correct) for x, y in completed)
+    total = total_correct + sum(len(x.incorrect) for x, y in completed)
     print('%d/%d keywords correct for completed labels' % (
         total_correct, total))
+
+    # Gather keyword accuracy data
+    default_result = {'correct': 0, 'incorrect': 0}
+    tuples = [(v, default_result.copy()) for v in Keywords.json.values()]
+    keyword_results = AttrDict(dict(tuples))
+    for k in Keywords.json:
+        for result, label in ocr_results:
+            if k in result.correct:
+                keyword_results[k]['correct'] += 1
+            else:
+                keyword_results[k]['incorrect'] += 1
+        print("Key: %s\n%s" % (k, keyword_results[k]))
+
+    keywords_rank = []
+    for k in Keywords.json:
+        # Create accuracy ratings for each keywords
+        correct = keyword_results[k]['correct']
+        incorrect = keyword_results[k]['incorrect']
+        accuracy = correct / (correct + incorrect)
+        keywords_rank.append((k, accuracy))
+
+    # Rank keywords by accuracy
+    keywords_rank.sort(key=lambda tup: tup[1])
+
+    pct_completed = len(completed)/len(labels)
+    pct_accurate = total_correct/total
+    return (pct_completed, pct_accurate, keywords_rank)
+
+
+def test_categories(dirpath):
+    std_ret = test_labels(dirpath, standard_labels())
+    skew_ret = test_labels(dirpath, skewed_labels())
+    light_ret = test_labels(dirpath, lighting_labels())
+    curve_ret = test_labels(dirpath, curved_labels())
+    horiz_ret = test_labels(dirpath, horizontal_labels())
+    color_ret = test_labels(dirpath, colored_labels())
+
+    def print_results(ret, label_type=''):
+        ret_str = '%.2f%% completed, %.2f%% accurate' %\
+            (ret[0]*100, ret[1]*100)
+        print('%s labels: %s' % (label_type, ret_str))
+
+    print_results(std_ret, 'Standard')
+    print_results(skew_ret, 'Skewed')
+    print_results(light_ret, 'Lighting')
+    print_results(curve_ret, 'Curved')
+    print_results(horiz_ret, 'Horizontal')
+    print_results(color_ret, 'Colored')
 
 
 def test_label(impath, label=None, jsonpath=None, demo=False):
@@ -56,15 +112,18 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
         print('Label Error')
         return False
 
-    #print(label)
-    #print(ocr_label)
+    print(ocr_label)
+    print('')
     # Compare this label with the JSON label object
     if label is not None:
-        correct = 0
-        for k in Keywords.json:
+        results = AttrDict({'correct': [], 'incorrect': []})
+        for k in Keywords.json.values():
             if label[k] == ocr_label[k]:
-                correct += 1
-        return (correct, len(Keywords.json), ocr_label)
+                results.correct.append(k)
+            else:
+                results.incorrect.append(k)
+
+        return (results, ocr_label)
 
 
 def demo_label(impath, jsonpath='../db/demo.json',
@@ -164,8 +223,10 @@ if __name__ == '__main__':
         arg = sys.argv[1]
         if arg == 'demo':
             demo_label(sys.argv[2])
+        elif arg == 'categories':
+            test_categories(sys.argv[2])
         elif os.path.isdir(arg):
-            test_all_easy(arg)
+            test_labels(arg)
         elif os.path.isfile(arg):
             jsonPath = '../db/' + sys.argv[2] + '.json'
             ret = test_label(arg, None, jsonPath)

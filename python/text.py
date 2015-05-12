@@ -1,5 +1,5 @@
 from subprocess import Popen, PIPE
-from keywords import *
+from keywords import Keywords
 import os
 
 
@@ -39,7 +39,7 @@ def create_tess_patterns(filename='eng.label-patterns'):
     patterns = []
     patterns.append('Calories *\d\d*')
 
-    std_line_keywords = [label_keywords[k] for k in label_keywords]
+    std_line_keywords = [Keywords.label[k] for k in Keywords.label]
     std_line_keywords.append('Cholesterol')
     std_line_keywords.append('Sodium')
     std_line_keywords.append('Potassium')
@@ -64,11 +64,10 @@ def create_tess_patterns(filename='eng.label-patterns'):
     for p in patterns:
         outfile.write(p + '\n')
 
-    bottom_area_keywords = [
-        'Vitamin A',
-        'Vitamin C',
-        'Vitamin D',
-        'Calcium',
-        'Iron'
-    ]
-
+#    bottom_area_keywords = [
+#        'Vitamin A',
+#        'Vitamin C',
+#        'Vitamin D',
+#        'Calcium',
+#        'Iron'
+#    ]

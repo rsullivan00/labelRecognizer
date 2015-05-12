@@ -183,7 +183,7 @@ def rotate_image(image, angle):
 
 
 # Adapted from here:
-# http://stackoverflow.com/questions/16265673/rotate-image-by-90-180-or-270-degrees 
+# http://stackoverflow.com/questions/16265673/rotate-image-by-90-180-or-270-degrees # noqa
 def rotate_image_90n(image, angle=0):
     # print("Rotate %s" % angle)
     n = ((angle/90) % 4) * 90
