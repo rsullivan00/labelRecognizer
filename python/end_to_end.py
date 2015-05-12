@@ -53,16 +53,17 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
         print('Label %s' % label.name)
     ocr_label = end_to_end(impath, show=False, demo=demo)
     if ocr_label is False:
+        print('Label Error')
         return False
 
-    print(ocr_label)
+    #print(label)
+    #print(ocr_label)
     # Compare this label with the JSON label object
     if label is not None:
         correct = 0
         for k in Keywords.json:
             if label[k] == ocr_label[k]:
                 correct += 1
-
         return (correct, len(Keywords.json), ocr_label)
 
 
@@ -166,7 +167,9 @@ if __name__ == '__main__':
         elif os.path.isdir(arg):
             test_all_easy(arg)
         elif os.path.isfile(arg):
-            test_label(arg)
+            jsonPath = '../db/' + sys.argv[2] + '.json'
+            ret = test_label(arg, None, jsonPath)
+            print('%d/%d Correct' % (ret[0], ret[1]))
         else:
             print('Usage:\n\t\'python3 end_to_end.py <path>\'\n\
                     (path should be a file or directory).')
