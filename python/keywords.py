@@ -5,18 +5,19 @@ from attrdict import AttrDict
 label_keywords = {
     'calories': 'Calories',
     'total_fat': 'Total Fat',
-    'protein': 'Protein',
-    'carbohydrates': 'Total Carbohydrate',
+    'saturated_fat': 'Saturated Fat',
     'trans_fat': 'Trans Fat',
     'poly_fat': 'Polyunsaturated Fat',
     'mono_fat': 'Monounsaturated Fat',
-    'saturated_fat': 'Saturated Fat',
     'cholesterol': 'Cholesterol',
     'sodium': 'Sodium',
     'potassium': 'Potassium',
+    'carbohydrates': 'Total Carbohydrate',
     'fiber': 'Dietary Fiber',
-    'sugars': 'Sugars'
+    'sugars': 'Sugars',
+    'protein': 'Protein'
 }
+
 
 # Json keywords correspond to the keys used in code.
 json_keywords = {
@@ -63,3 +64,19 @@ Keywords = {
 # Make the Keywords object attribute-accessible
 # e.g. Keywords.label.calories == 'Calories'
 Keywords = AttrDict(Keywords)
+
+Keywords.ordered = [
+    Keywords.label.calories,
+    Keywords.label.total_fat,
+    Keywords.label.protein,
+    Keywords.label.carbohydrates,
+    Keywords.label.trans_fat,
+    Keywords.label.poly_fat,
+    Keywords.label.mono_fat,
+    Keywords.label.saturated_fat,
+    Keywords.label.cholesterol,
+    Keywords.label.sodium,
+    Keywords.label.potassium,
+    Keywords.label.fiber,
+    Keywords.label.sugars
+]

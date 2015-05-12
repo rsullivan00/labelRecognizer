@@ -45,6 +45,14 @@ def test_labels(dirpath, labels=None):
     print('%d/%d keywords correct for completed labels' % (
         total_correct, total))
 
+    pct_rank = [(len(x.correct)/(len(x.incorrect) + len(x.correct)), y.name)
+                for x, y in completed]
+    pct_rank.sort(key=lambda tup: tup[0])
+
+    pct_rank_str = ', '.join(
+        ['%s: %.2f%%' % (x[1], 100*x[0]) for x in pct_rank])
+    print('Labels %% correct: %s' % pct_rank_str)
+
     # Gather keyword accuracy data
     default_result = {'correct': 0, 'incorrect': 0}
     tuples = [(v, default_result.copy()) for v in Keywords.json.values()]
@@ -55,7 +63,7 @@ def test_labels(dirpath, labels=None):
                 keyword_results[k]['correct'] += 1
             else:
                 keyword_results[k]['incorrect'] += 1
-        print("Key: %s\n%s" % (k, keyword_results[k]))
+#        print("Key: %s\n%s" % (k, keyword_results[k]))
 
     keywords_rank = []
     for k in Keywords.json:
@@ -70,7 +78,7 @@ def test_labels(dirpath, labels=None):
 
     pct_completed = len(completed)/len(labels)
     pct_accurate = total_correct/total
-    return (pct_completed, pct_accurate, keywords_rank)
+    return (pct_completed, pct_accurate, keywords_rank, pct_rank)
 
 
 def test_categories(dirpath):

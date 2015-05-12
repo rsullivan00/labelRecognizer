@@ -66,9 +66,19 @@ def match_bipartite(pairs, keywords):
 
     distances = np.zeros((len(keywords), len(pairs)), dtype=np.int32).tolist()
 
+    keywords_ordered = Keywords.ordered
+    start_line = 3
     for i, key in enumerate(keywords):
         for j, pair in enumerate(pairs):
             distances[i][j] = distance(pair[0], key)
+            line = pair[2] - start_line
+            expected_line = keywords_ordered.index(key)
+            tol = (int(0.2 * expected_line) + 2)
+            diff = np.abs((expected_line - line)) - tol
+            diff = max(diff, 0)
+            diff = np.log(diff + 1)
+            print(diff, key, pair, expected_line)
+            distances[i][j] += diff
 
     m = Munkres()
     # Copy distance matrix to preserve distances
@@ -113,14 +123,14 @@ def keyword_pairs(pairs):
 
     keywords = Keywords.label.values()
     key_pairs = match_bipartite(pairs, keywords)
-    remove_indices = check_keyword_ordering(key_pairs)
-    for ri in remove_indices:
-        for pair in pairs:
-            if pair[2] is ri:
-                pairs.remove(pair)
-
-    if len(remove_indices) > 0:
-        return keyword_pairs(pairs)
+#    remove_indices = check_keyword_ordering(key_pairs)
+#    for ri in remove_indices:
+#        for pair in pairs:
+#            if pair[2] is ri:
+#                pairs.remove(pair)
+#
+#    if len(remove_indices) > 0:
+#        return keyword_pairs(pairs)
 
     return key_pairs
 
@@ -136,9 +146,6 @@ def split_percentages(key_pairs):
     def percent_tuple(pair):
         right = pair[1].split(' ')
         amount = right[0]
-        if amount[-1] == '9':
-            amount = amount[:-1] + 'g'
-
         pct = (' ').join(right[1:])
         return (pair[0], amount, pct, pair[2])
 
@@ -176,12 +183,23 @@ def remove_bad_pairs(pairs):
     return good_pairs
 
 
-def clean_values(tuples):
+def clean_values(tuples, index=1):
+    """
+    Cleans text values in the specified index of the tuple.
+
+    Removes all non-number characters except for '.'
+    """
     clean_tuples = []
     for t in tuples:
         t_new = list(t)
-        if t_new[1] is not None:
-            t_new[1] = re.sub('[^0-9.]', '', t_new[1])
+        val = t_new[index]
+        if val is not None:
+            val = re.sub('[^mg0-9.]', '', val)
+            if len(val) > 0 and val[-1] == '9':
+                val = val[:-1] + 'g'
+            val = re.sub('[^0-9.]', '', val)
+
+        t_new[index] = val
         clean_tuples.append(tuple(t_new))
 
     return clean_tuples
