@@ -157,7 +157,51 @@ def approx_rect(contours, epsilon=50):
     return label_contour, label_corners
 
 
-def contour(imagepath, invert=False, demo=False):
+def get_angle(orientation):
+    # Taken from http://stackoverflow.com/questions/
+    # 22045882/modify-or-delete-exif-tag-orientation-in-python
+    print('Orientation: %s' % orientation)
+    if orientation == 6:
+        return -90
+    elif orientation == 8:
+        return 90
+    elif orientation == 3:
+        return 180
+
+    # Doesn't handle transposed images
+    return 0
+
+
+def rotate_image(image, angle):
+    print("Rotate %s" % angle)
+    image_center = tuple(np.array(image.shape[0:2])/2)
+    print(image_center)
+    rot_mat = cv2.getRotationMatrix2D(
+        image_center, angle, 1.0)
+    result = cv2.warpAffine(
+        image, rot_mat, image.shape[0:2], flags=cv2.INTER_LINEAR)
+    return result
+
+
+# Adapted from here:
+# http://stackoverflow.com/questions/16265673/rotate-image-by-90-180-or-270-degrees 
+def rotate_image_90n(image, angle=0):
+    print("Rotate %s" % angle)
+    n = ((angle/90) % 4) * 90
+
+    flip_h_or_v = 1
+    if angle > 0:
+        flip_h_or_v = 0
+
+    n = np.abs(int(angle/90))
+    for i in range(n):
+        image = cv2.transpose(image, image)
+        image = cv2.flip(image, flip_h_or_v)
+
+    return image
+
+
+def contour(imagepath, invert=False, demo=False, orientation=1):
     """
     Finds a label contour in the specified image.
     Returns an image with just the extracted label, or False if
@@ -181,6 +225,13 @@ def contour(imagepath, invert=False, demo=False):
 
     im = cv2.imread(imagepath)
     im = downscale_im(im)
+    # Account for rotated images
+    angle = get_angle(orientation)
+    if angle != 0:
+        im = rotate_image_90n(im, angle)
+
+    draw_image(im, 'test')
+
     cv2.imwrite(filenames['original'], im)
     im_x = len(im[0])
     im_y = len(im)
@@ -247,19 +298,14 @@ def contour(imagepath, invert=False, demo=False):
     # to set up transformation image
     min_rect = cv2.minAreaRect(label_contour)
     size = (int(min_rect[1][0]), int(min_rect[1][1]))
-    angle = min_rect[2]
 
-    # Account for rotated images
-#    if abs(angle) > 45:
-#        angle = angle % 45
-#        size = (size[1], size[0])
+    size = (size[1], size[0])
 
-    new_corners = corners(
-        np.array(
-            [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]],
-            np.float32
-        )
+    np_corners = np.array(
+        [[0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]],
+        np.float32
     )
+    new_corners = corners(np_corners)
 #    tps = cv2.createThinPlateSplineShapeTransformer(25000)
 #    tps.estimateTransformation(label_contour, new_corners
     M = cv2.getPerspectiveTransform(

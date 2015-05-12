@@ -21,12 +21,12 @@ def test_all_easy(dirpath):
     ocr_results = []
     for label in labels:
         impath = os.path.join(dirpath, label.name + '.jpg')
-        try:
-            correct, nkeys, ocr_label = test_label(impath, label)
+        ret = test_label(impath, label)
+        if ret:
+            correct, nkeys, ocr_label = ret
             ocr_results.append((correct, nkeys))
-        except TypeError:
+        else:
             print("Label %s failed" % label.name)
-            pass
 
     completed = [x for x in ocr_results if x]
     print('%d/%d labels processed to completion' % (
@@ -67,7 +67,7 @@ def test_label(impath, label=None, jsonpath=None, demo=False):
 
 
 def demo_label(impath, jsonpath='../db/demo.json',
-               backup_path='./demo/new_1.JPG'):
+               backup_path='./demo/demo_2.jpg'):
 
     # Check to make sure it worked the first time
     correct, count, label = test_label(impath, jsonpath=jsonpath, demo=True)
@@ -103,27 +103,6 @@ def demo_label(impath, jsonpath='../db/demo.json',
     call(['xdg-open', text_filepaths[1]])
 
 
-def rotate(img, orientation):
-    # Taken from http://stackoverflow.com/questions/
-    # 22045882/modify-or-delete-exif-tag-orientation-in-python
-    if orientation == 6:
-        img = img.rotate(-90)
-    elif orientation == 8:
-        img = img.rotate(90)
-    elif orientation == 3:
-        img = img.rotate(180)
-    elif orientation == 2:
-        img = img.transpose(Image.FLIP_LEFT_RIGHT)
-    elif orientation == 5:
-        img = img.rotate(-90).transpose(Image.FLIP_LEFT_RIGHT)
-    elif orientation == 7:
-        img = img.rotate(90).transpose(Image.FLIP_LEFT_RIGHT)
-    elif orientation == 4:
-        img = img.rotate(180).transpose(Image.FLIP_LEFT_RIGHT)
-
-    return img
-
-
 def end_to_end(impath, show=False, demo=False):
     """
     Return a Label object from a label in the provided image.
@@ -131,16 +110,19 @@ def end_to_end(impath, show=False, demo=False):
 
     start = timer()
 #    try:
-#        img = Image.open(impath)
-#        exif_data = img._getexif()
-#        # orientation tag is 0x0112
-#        orientation = exif_data[274]
-#        rotate(img, orientation)
-#        img.save(impath)
-#    except TypeError:
-#        pass
+    img = Image.open(impath)
+    exif_data = img._getexif()
 
-    label_im = contour(impath, demo=demo)
+    orientation = 1
+    if exif_data is not None:
+        # orientation tag is 0x0112
+        o_data = exif_data[274]
+        if o_data is not None:
+            orientation = int(o_data)
+
+    print(orientation)
+
+    label_im = contour(impath, demo=demo, orientation=orientation)
     if label_im is False:
         label_im = contour(impath, invert=True, demo=demo)
         if label_im is False:
