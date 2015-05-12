@@ -1,5 +1,4 @@
-import re
-from keywords import label_keywords, Keywords
+from keywords import Keywords
 
 
 class Label:

@@ -59,7 +59,7 @@ def match_bipartite(pairs, keywords):
     Uses the Munkres bipartite matching algorithm to find the best
     matching between the OCR pairs and label keywords.
 
-    Returns (keyword, (OCR key, OCR value))
+    Returns (keyword, OCR value, OCR line)
     """
     pairs = list(pairs)
     keywords = list(keywords)

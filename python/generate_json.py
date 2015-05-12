@@ -3,8 +3,6 @@ import csv
 import os
 import jsonpickle
 from label import Label
-from collections import defaultdict
-from keywords import Keywords
 
 os.chdir('../')
 
