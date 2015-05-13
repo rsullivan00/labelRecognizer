@@ -63,7 +63,7 @@ def test_labels(dirpath, labels=None):
                 keyword_results[k]['correct'] += 1
             else:
                 keyword_results[k]['incorrect'] += 1
-#        print("Key: %s\n%s" % (k, keyword_results[k]))
+        print("Key: %s\n%s" % (k, keyword_results[k]))
 
     keywords_rank = []
     for k in Keywords.json:
@@ -243,10 +243,13 @@ if __name__ == '__main__':
                 json_path = '../db/' + sys.argv[2] + '.json'
             ret = test_label(arg, jsonpath=json_path)
             if ret is not None:
-                ret, label = ret
-                print('%d/%d Correct' % (len(ret.correct),
-                                        (len(ret.correct) +
-                                            len(ret.incorrect))))
+                if len(ret) == 1:
+                    label = ret
+                else:
+                    res, label = ret
+                    print('%d/%d Correct' % (len(res.correct),
+                                            (len(res.correct) +
+                                                len(res.incorrect))))
         else:
             print('Usage:\n\t\'python3 end_to_end.py <path>\'\n\
                     (path should be a file or directory).')

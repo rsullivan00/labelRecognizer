@@ -68,15 +68,15 @@ Keywords = AttrDict(Keywords)
 Keywords.ordered = [
     Keywords.label.calories,
     Keywords.label.total_fat,
-    Keywords.label.protein,
-    Keywords.label.carbohydrates,
+    Keywords.label.saturated_fat,
     Keywords.label.trans_fat,
     Keywords.label.poly_fat,
     Keywords.label.mono_fat,
-    Keywords.label.saturated_fat,
     Keywords.label.cholesterol,
     Keywords.label.sodium,
     Keywords.label.potassium,
+    Keywords.label.carbohydrates,
     Keywords.label.fiber,
-    Keywords.label.sugars
+    Keywords.label.sugars,
+    Keywords.label.protein
 ]
